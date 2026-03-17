@@ -18,6 +18,7 @@ import {
   Star,
 } from "@mui/icons-material";
 import { Court } from "../../types";
+import BookingTypeDialog from "../BookingTypeDialog";
 
 interface CourtCardProps {
   court: Court;
@@ -267,6 +268,20 @@ const CourtCard: React.FC<CourtCardProps> = ({ court }) => {
           </Button>
         </Box>
       </CardContent>
+
+      {/* Booking type selection dialog */}
+      <BookingTypeDialog
+        open={showBookingDialog}
+        onClose={() => setShowBookingDialog(false)}
+        onSelectDaily={() => {
+          setShowBookingDialog(false);
+          navigate(`/booking-schedule/${court._id}`);
+        }}
+        onSelectEvent={() => {
+          setShowBookingDialog(false);
+          navigate(`/booking/${court._id}`);
+        }}
+      />
     </Card>
   );
 };
