@@ -137,6 +137,368 @@ const createBooking = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+
+const getCustomerBookings = async (req, res) => {
+  try {
+    const { status, startDate, endDate } = req.query;
+
+    let filter = { customerId: req.userId };
+
+    if (status) filter.status = status;
+    if (startDate || endDate) {
+      filter.startDate = {};
+      if (startDate) filter.startDate.$gte = new Date(startDate);
+      if (endDate) filter.startDate.$lte = new Date(endDate);
+    }
+
+    const bookings = await Booking.find(filter)
+      .populate("courtId", "name address")
+      .sort({ startDate: -1 });
+
+    res.json(bookings);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+const getBookingById = async (req, res) => {
+  try {
+    const booking = await Booking.findById(req.params.id)
+      .populate("courtId")
+      .populate("customerId", "name phone email");
+
+    if (!booking) {
+      return res.status(404).json({ error: "Booking not found" });
+    }
+
+    if (
+      booking.customerId._id.toString() !== req.userId &&
+      booking.adminId.toString() !== req.userId
+    ) {
+      return res.status(403).json({ error: "Not authorized" });
+    }
+
+    res.json(booking);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+
+const addDrinkToBooking = async (req, res) => {
+  try {
+    const { drinkId, quantity } = req.body;
+
+    const booking = await Booking.findById(req.params.id);
+    if (!booking) {
+      return res.status(404).json({ error: "Booking not found" });
+    }
+
+    if (booking.adminId.toString() !== req.userId) {
+      return res.status(403).json({ error: "Not authorized" });
+    }
+
+    const drink = await Drink.findById(drinkId);
+    if (!drink) {
+      return res.status(404).json({ error: "Drink not found" });
+    }
+
+    if (drink.quantity < quantity) {
+      return res.status(400).json({ error: "Insufficient stock" });
+    }
+
+    const drinkPrice = drink.price * quantity;
+
+    booking.drinkItems.push({
+      drinkId,
+      name: drink.name,
+      price: drink.price,
+      quantity,
+    });
+
+    booking.totalDrinkPrice += drinkPrice;
+    booking.totalPrice = booking.courtPrice + booking.totalDrinkPrice;
+
+    drink.quantity -= quantity;
+    await drink.save();
+
+    await booking.save();
+
+    res.json({
+      message: "Drink added to booking",
+      booking,
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+const completeBooking = async (req, res) => {
+  try {
+    const booking = await Booking.findById(req.params.id);
+
+    if (!booking) {
+      return res.status(404).json({ error: "Booking not found" });
+    }
+
+    if (booking.adminId.toString() !== req.userId) {
+      return res.status(403).json({ error: "Not authorized" });
+    }
+
+    booking.status = "COMPLETED";
+    booking.completedAt = new Date();
+    await booking.save();
+
+    const revenue = new Revenue({
+      bookingId: booking._id,
+      adminId: booking.adminId,
+      courtId: booking.courtId,
+      courtRevenue: booking.courtPrice,
+      drinkRevenue: booking.totalDrinkPrice,
+      totalRevenue: booking.totalPrice,
+      date: new Date(),
+    });
+
+    await revenue.save();
+
+    res.json({
+      message: "Booking completed",
+      booking,
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+const getAdminBookings = async (req, res) => {
+  try {
+    if (req.params.adminId !== req.userId) {
+      return res.status(403).json({ error: "Not authorized" });
+    }
+
+    const { status, startDate, endDate, courtId } = req.query;
+
+    let filter = { adminId: req.userId };
+
+    if (status) filter.status = status;
+    if (courtId) filter.courtId = courtId;
+    if (startDate || endDate) {
+      filter.startDate = {};
+      if (startDate) filter.startDate.$gte = new Date(startDate);
+      if (endDate) filter.startDate.$lte = new Date(endDate);
+    }
+
+    const bookings = await Booking.find(filter)
+      .populate("courtId", "name")
+      .populate("customerId", "name phone email")
+      .sort({ startDate: -1 });
+
+    res.json(bookings);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+const deleteBooking = async (req, res) => {
+  try {
+    const booking = await Booking.findById(req.params.id);
+
+    if (!booking) {
+      return res.status(404).json({ error: "Booking not found" });
+    }
+
+    const isCustomer = booking.customerId.toString() === req.userId;
+    const isAdmin = booking.adminId.toString() === req.userId;
+
+    if (!isCustomer && !isAdmin) {
+      return res.status(403).json({ error: "Not authorized" });
+    }
+
+    if (booking.drinkItems.length > 0) {
+      for (const item of booking.drinkItems) {
+        const drink = await Drink.findById(item.drinkId);
+        if (drink) {
+          drink.quantity += item.quantity;
+          await drink.save();
+        }
+      }
+    }
+
+    await Booking.findByIdAndDelete(req.params.id);
+
+    res.json({ message: "Booking deleted successfully" });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+const updateBooking = async (req, res) => {
+  try {
+    const booking = await Booking.findById(req.params.id);
+
+    if (!booking) {
+      return res.status(404).json({ error: "Booking not found" });
+    }
+
+    if (booking.adminId.toString() !== req.userId) {
+      return res.status(403).json({ error: "Not authorized" });
+    }
+
+    const { startTime, endTime, durationHours, drinkUpdates } = req.body;
+
+    if (startTime) booking.startTime = startTime;
+    if (endTime) booking.endTime = endTime;
+
+    if (durationHours) {
+      booking.durationHours = durationHours;
+      const court = await Court.findById(booking.courtId);
+      booking.courtPrice = court.pricePerHour * durationHours;
+    }
+
+    if (drinkUpdates && Array.isArray(drinkUpdates)) {
+      let newTotalDrinkPrice = 0;
+
+      for (const update of drinkUpdates) {
+        const { drinkId, quantity, action } = update;
+
+        if (action === "add") {
+          const drink = await Drink.findById(drinkId);
+          if (!drink) {
+            return res
+              .status(404)
+              .json({ error: `Drink ${drinkId} not found` });
+          }
+
+          if (drink.quantity < quantity) {
+            return res.status(400).json({ error: "Insufficient stock" });
+          }
+
+          const existingItem = booking.drinkItems.find(
+            (item) => item.drinkId.toString() === drinkId,
+          );
+
+          if (existingItem) {
+            existingItem.quantity += quantity;
+          } else {
+            booking.drinkItems.push({
+              drinkId,
+              name: drink.name,
+              price: drink.price,
+              quantity,
+            });
+          }
+
+          drink.quantity -= quantity;
+          await drink.save();
+        } else if (action === "remove") {
+          const existingItem = booking.drinkItems.find(
+            (item) => item.drinkId.toString() === drinkId,
+          );
+
+          if (existingItem) {
+            const drink = await Drink.findById(drinkId);
+            if (drink) {
+              drink.quantity += existingItem.quantity;
+              await drink.save();
+            }
+
+            booking.drinkItems = booking.drinkItems.filter(
+              (item) => item.drinkId.toString() !== drinkId,
+            );
+          }
+        }
+      }
+
+      booking.totalDrinkPrice = booking.drinkItems.reduce(
+        (sum, item) => sum + item.price * item.quantity,
+        0,
+      );
+    }
+
+    booking.totalPrice = booking.courtPrice + booking.totalDrinkPrice;
+    await booking.save();
+
+    res.json({
+      message: "Booking updated successfully",
+      booking,
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+const approveBooking = async (req, res) => {
+  try {
+    const booking = await Booking.findById(req.params.id);
+
+    if (!booking) {
+      return res.status(404).json({ error: "Booking not found" });
+    }
+
+    if (booking.adminId.toString() !== req.userId) {
+      return res.status(403).json({ error: "Not authorized" });
+    }
+
+    if (booking.status !== "PENDING_APPROVAL") {
+      return res
+        .status(400)
+        .json({ error: "Booking cannot be approved in current status" });
+    }
+
+    booking.status = "CONFIRMED";
+    booking.approvedAt = new Date();
+    await booking.save();
+
+    res.json({
+      message: "Booking approved successfully",
+      booking,
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+const rejectBooking = async (req, res) => {
+  try {
+    const booking = await Booking.findById(req.params.id);
+
+    if (!booking) {
+      return res.status(404).json({ error: "Booking not found" });
+    }
+
+    if (booking.adminId.toString() !== req.userId) {
+      return res.status(403).json({ error: "Not authorized" });
+    }
+
+    if (booking.status !== "PENDING_APPROVAL") {
+      return res
+        .status(400)
+        .json({ error: "Booking cannot be rejected in current status" });
+    }
+
+    if (booking.drinkItems.length > 0) {
+      for (const item of booking.drinkItems) {
+        const drink = await Drink.findById(item.drinkId);
+        if (drink) {
+          drink.quantity += item.quantity;
+          await drink.save();
+        }
+      }
+    }
+
+    booking.status = "CANCELLED";
+    booking.rejectedAt = new Date();
+    await booking.save();
+
+    res.json({
+      message: "Booking rejected successfully",
+      booking,
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+
 module.exports = {
   createBooking,
   checkAvailability,   // ← thêm dòng này
