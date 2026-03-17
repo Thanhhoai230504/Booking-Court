@@ -1,6 +1,6 @@
 import React from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { Login, SignUp } from "../pages";
+import { Login, SignUp,FavoriteCourts } from "../pages";
 import MainLayout from "@/layout/MainLayout/MainLayout";
 import Home from "@/pages/Home";
 import CourtDetail from "@/pages/CourtDetail";
@@ -14,6 +14,7 @@ const Routers: React.FC = () => {
         <Route element={<MainLayout />}>
           <Route path="/" element={<Home />} />
           <Route path="/courts/:id" element={<CourtDetail />} />
+          <Route path="/favorites" element={<FavoriteCourts />} />
         </Route>
       </Routes>
     </BrowserRouter>

@@ -8,6 +8,8 @@ export const store = configureStore({
     auth: authReducer,
     courts: courtReducer,
     bookings: bookingReducer,
+    favorites: favoriteReducer,
+
   },
 });
 

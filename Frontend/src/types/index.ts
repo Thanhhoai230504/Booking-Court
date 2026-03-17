@@ -56,3 +56,62 @@ export interface Court {
   };
   createdAt?: string;
 }
+
+// Booking types
+export interface DrinkItem {
+  drinkId: string;
+  name: string;
+  price: number;
+  quantity: number;
+  addedAt?: string;
+}
+
+export interface RecurringRule {
+  frequency: 'weekly' | 'biweekly' | 'monthly';
+  interval: number;
+  endDate: string;
+}
+
+export interface Booking {
+  _id: string;
+  bookingNumber: string;
+  customerId: string | User;
+  courtId: string | Court;
+  adminId?: string;
+  bookingType: 'single' | 'recurring';
+  customerName: string;
+  customerPhone: string;
+  startDate: string;
+  endDate: string;
+  startTime: string;
+  endTime: string;
+  durationHours: number;
+  courtPrice: number;
+  drinkItems: DrinkItem[];
+  totalDrinkPrice: number;
+  totalPrice: number;
+  status: 'PENDING_APPROVAL' | 'CONFIRMED' | 'PLAYING' | 'COMPLETED' | 'CANCELLED';
+  paymentMethod: 'online' | 'cash';
+  paymentStatus: 'pending' | 'completed' | 'failed';
+  paymentProof?: string;
+  recurringRule?: RecurringRule;
+  notes?: string;
+  createdAt?: string;
+  completedAt?: string;
+  approvedAt?: string;
+  rejectedAt?: string;
+}
+
+export interface CreateBookingRequest {
+  courtId: string;
+  startDate: string;
+  startTime: string;
+  endTime: string;
+  durationHours: number;
+  customerName: string;
+  customerPhone: string;
+  bookingType: 'single' | 'recurring';
+  paymentMethod: 'online' | 'cash';
+  paymentProof?: string;
+  recurringRule?: RecurringRule;
+}
