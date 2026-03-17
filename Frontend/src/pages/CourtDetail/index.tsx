@@ -31,6 +31,7 @@ import {
 } from "@mui/icons-material";
 import { AppDispatch, RootState } from "../../store/store";
 import { fetchCourtDetail } from "../../store/slices/courtSlice";
+import BookingTypeDialog from "@/components/BookingTypeDialog";
 
 const defaultImages = [
   "https://images.unsplash.com/photo-1554068865-24cecd4e34b8?w=800&h=500&fit=crop",
@@ -575,6 +576,20 @@ const CourtDetail: React.FC = () => {
           </Grid>
         </Grid>
       </Container>
+
+      {/* Booking type selection dialog */}
+      <BookingTypeDialog
+        open={showBookingDialog}
+        onClose={() => setShowBookingDialog(false)}
+        onSelectDaily={() => {
+          setShowBookingDialog(false);
+          navigate(`/booking-schedule/${court._id}`);
+        }}
+        onSelectEvent={() => {
+          setShowBookingDialog(false);
+          navigate(`/booking/${court._id}`);
+        }}
+      />
     </Box>
   );
 };
