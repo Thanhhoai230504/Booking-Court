@@ -7,22 +7,26 @@ import "react-toastify/dist/ReactToastify.css";
 import theme from "./theme/muitheme";
 
 import "./App.css";
+import Routers from "./routers/Routers";
+import { store } from "./store/store";
 
 const App: React.FC = () => {
   return (
-    <ThemeProvider theme={theme}>
-      <CssBaseline />
-
-      <ToastContainer
-        position="top-right"
-        autoClose={3000}
-        hideProgressBar={false}
-        newestOnTop
-        closeOnClick
-        pauseOnHover
-        theme="colored"
-      />
-    </ThemeProvider>
+    <Provider store={store}>
+      <ThemeProvider theme={theme}>
+        <CssBaseline />
+        <Routers />
+        <ToastContainer
+          position="top-right"
+          autoClose={3000}
+          hideProgressBar={false}
+          newestOnTop
+          closeOnClick
+          pauseOnHover
+          theme="colored"
+        />
+      </ThemeProvider>
+    </Provider>
   );
 };
 
