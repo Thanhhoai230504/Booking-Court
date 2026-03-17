@@ -1,6 +1,6 @@
 const express = require("express");
 const { auth, adminAuth } = require("../middleware/auth");
-const validate = require("../middleware/validate");
+const {validate }= require("../middleware/validate");
 const {
   createBookingValidation,
   checkAvailabilityValidation,
@@ -9,7 +9,6 @@ const {
 const {
   createBooking,
   checkAvailability,
-  createBooking,
   getCustomerBookings,      
   getBookingById,           
   addDrinkToBooking,        
@@ -23,9 +22,9 @@ const {
 
 const router = express.Router();
 
-router.post("/", auth, validate(createBookingValidation), createBooking);
-router.get("/", auth, validate(getCustomerBookingsValidation), getCustomerBookings);
-router.get("/check-available", auth, validate(checkAvailabilityValidation), checkAvailability);
+router.post("/", auth, ...createBookingValidation, createBooking);
+router.get("/", auth, ...getCustomerBookingsValidation, getCustomerBookings);
+router.get("/check-available", auth, ...checkAvailabilityValidation, checkAvailability);
 router.get("/:id", auth, getBookingById);
 router.delete("/:id", auth, deleteBooking);
 router.put("/:id", adminAuth, updateBooking); 

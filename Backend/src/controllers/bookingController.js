@@ -1,6 +1,52 @@
 const Booking = require("../models/Booking");
 const Court = require("../models/Court");
 
+const calculateDate = (date, hours) => {
+  const d = new Date(date);
+  d.setHours(d.getHours() + hours);
+  return d;
+};
+
+const createRecurringBookings = async (booking, recurringRule) => {
+  const { frequency, interval, endDate } = recurringRule;
+  const recurringBookingIds = [];
+  let currentDate = new Date(booking.startDate);
+
+  while (currentDate <= new Date(endDate)) {
+    if (currentDate.getTime() !== booking.startDate.getTime()) {
+      const newBooking = new Booking({
+        customerId: booking.customerId,
+        courtId: booking.courtId,
+        adminId: booking.adminId,
+        bookingType: "recurring",
+        customerName: booking.customerName,
+        customerPhone: booking.customerPhone,
+        startDate: new Date(currentDate),
+        endDate: calculateDate(currentDate, booking.durationHours),
+        startTime: booking.startTime,
+        endTime: booking.endTime,
+        durationHours: booking.durationHours,
+        courtPrice: booking.courtPrice,
+        totalPrice: booking.totalPrice,
+        paymentMethod: booking.paymentMethod,
+        status: "CONFIRMED",
+      });
+
+      await newBooking.save();
+      recurringBookingIds.push(newBooking._id);
+    }
+
+    if (frequency === "weekly") {
+      currentDate.setDate(currentDate.getDate() + 7);
+    } else if (frequency === "biweekly") {
+      currentDate.setDate(currentDate.getDate() + 14);
+    } else if (frequency === "monthly") {
+      currentDate.setMonth(currentDate.getMonth() + 1);
+    }
+  }
+
+  return recurringBookingIds;
+};
 
 const checkAvailability = async (req, res) => {
   try {
@@ -512,7 +558,4 @@ module.exports = {
   approveBooking,
   rejectBooking,
 };
-module.exports = {
-  createBooking,
-  checkAvailability
-};
+
