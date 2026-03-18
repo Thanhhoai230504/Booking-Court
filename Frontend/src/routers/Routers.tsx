@@ -1,16 +1,11 @@
 import React from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { Login, SignUp } from "../pages";
 import MainLayout from "@/layout/MainLayout/MainLayout";
 import Home from "@/pages/Home";
 import CourtDetail from "@/pages/CourtDetail";
 import { Login, SignUp, FavoriteCourts, MyBookings, AccountPage } from "../pages";
-import MainLayout from "@/layout/MainLayout/MainLayout";
-import Home from "@/pages/Home";
-import CourtDetail from "@/pages/CourtDetail";
 import BookingSchedule from "@/pages/BookingSchedule";
 import Booking from '@/pages/Booking';
-
 const Routers: React.FC = () => {
   return (
     <BrowserRouter>
