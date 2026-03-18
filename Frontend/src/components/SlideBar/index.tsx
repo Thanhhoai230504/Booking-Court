@@ -275,11 +275,11 @@ const CourtCard: React.FC<CourtCardProps> = ({ court }) => {
         onClose={() => setShowBookingDialog(false)}
         onSelectDaily={() => {
           setShowBookingDialog(false);
-          navigate(`/booking-schedule/${court._id}`);
+          setTimeout(() => navigate(`/booking-schedule/${court._id}`), 0);
         }}
         onSelectEvent={() => {
           setShowBookingDialog(false);
-          navigate(`/booking/${court._id}`);
+          setTimeout(() => navigate(`/booking/${court._id}`), 0);
         }}
       />
     </Card>
