@@ -16,6 +16,10 @@ const bookingSchema = new mongoose.Schema(
       ref: "Court",
       required: true,
     },
+    courtNumber: {
+      type: Number,
+      default: 0,
+    },
     adminId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",

@@ -1,110 +1,153 @@
-const { body, param, query } = require("express-validator");
+const { isObjectId, isTimeFormat, isDateString, isPhone } = require('../middleware/validate');
 
-const createBookingValidation = [
-  body("courtId")
-    .notEmpty()
-    .withMessage("Court ID không được để trống")
-    .isMongoId()
-    .withMessage("Court ID không hợp lệ"),
+const validateCreateBooking = (body) => {
+  const errors = [];
 
-  body("startDate")
-    .notEmpty()
-    .withMessage("Ngày bắt đầu không được để trống")
-    .isISO8601()
-    .withMessage("Ngày bắt đầu không hợp lệ"),
+  // courtId
+  if (!body.courtId) {
+    errors.push('courtId là bắt buộc');
+  } else if (!isObjectId(body.courtId)) {
+    errors.push('courtId không hợp lệ');
+  }
 
-  body("startTime")
-    .notEmpty()
-    .withMessage("Giờ bắt đầu không được để trống")
-    .matches(/^([01]\d|2[0-3]):([0-5]\d)$/)
-    .withMessage("Giờ bắt đầu phải có định dạng HH:mm"),
+  // startDate
+  if (!body.startDate) {
+    errors.push('startDate là bắt buộc');
+  } else if (!isDateString(body.startDate)) {
+    errors.push('startDate không đúng định dạng ngày');
+  } else {
+    const start = new Date(body.startDate);
+    const now = new Date();
+    now.setHours(0, 0, 0, 0);
+    if (start < now) {
+      errors.push('startDate không được nằm trong quá khứ');
+    }
+  }
 
-  body("endTime")
-    .notEmpty()
-    .withMessage("Giờ kết thúc không được để trống")
-    .matches(/^([01]\d|2[0-3]):([0-5]\d)$/)
-    .withMessage("Giờ kết thúc phải có định dạng HH:mm"),
+  // startTime
+  if (!body.startTime) {
+    errors.push('startTime là bắt buộc');
+  } else if (!isTimeFormat(body.startTime)) {
+    errors.push('startTime phải có định dạng HH:mm (ví dụ: 08:00)');
+  }
 
-  body("durationHours")
-    .notEmpty()
-    .withMessage("Số giờ không được để trống")
-    .isFloat({ min: 0.5 })
-    .withMessage("Số giờ phải lớn hơn hoặc bằng 0.5"),
+  // endTime
+  if (!body.endTime) {
+    errors.push('endTime là bắt buộc');
+  } else if (!isTimeFormat(body.endTime)) {
+    errors.push('endTime phải có định dạng HH:mm (ví dụ: 10:00)');
+  }
 
-  body("customerName")
-    .notEmpty()
-    .withMessage("Tên khách hàng không được để trống")
-    .trim()
-    .isLength({ min: 2, max: 100 })
-    .withMessage("Tên khách hàng phải từ 2 đến 100 ký tự"),
+  // durationHours
+  if (body.durationHours === undefined || body.durationHours === null) {
+    errors.push('durationHours là bắt buộc');
+  } else if (typeof body.durationHours !== 'number' || body.durationHours <= 0) {
+    errors.push('durationHours phải là số lớn hơn 0');
+  }
 
-  body("customerPhone")
-    .notEmpty()
-    .withMessage("Số điện thoại không được để trống")
-    .isMobilePhone()
-    .withMessage("Số điện thoại không hợp lệ"),
+  // customerName
+  if (!body.customerName || typeof body.customerName !== 'string') {
+    errors.push('customerName là bắt buộc');
+  } else if (body.customerName.trim().length < 2 || body.customerName.trim().length > 100) {
+    errors.push('customerName phải từ 2-100 ký tự');
+  }
 
-  body("bookingType")
-    .optional()
-    .isIn(["single", "recurring"])
-    .withMessage("Loại booking phải là single hoặc recurring"),
+  // customerPhone
+  if (!body.customerPhone || typeof body.customerPhone !== 'string') {
+    errors.push('customerPhone là bắt buộc');
+  } else if (!isPhone(body.customerPhone)) {
+    errors.push('customerPhone phải có 10-11 chữ số');
+  }
 
-  body("paymentMethod")
-    .optional()
-    .isIn(["online", "cash"])
-    .withMessage("Phương thức thanh toán phải là online hoặc cash"),
-];
+  // bookingType (optional)
+  if (body.bookingType && !['single', 'recurring'].includes(body.bookingType)) {
+    errors.push('bookingType phải là "single" hoặc "recurring"');
+  }
 
-const getCustomerBookingsValidation = [
-  query("status")
-    .optional()
-    .isIn([
-      "PENDING_APPROVAL",
-      "CONFIRMED",
-      "PLAYING",
-      "COMPLETED",
-      "CANCELLED",
-    ])
-    .withMessage("Trạng thái không hợp lệ"),
+  // paymentMethod (optional)
+  if (body.paymentMethod && !['online', 'cash'].includes(body.paymentMethod)) {
+    errors.push('paymentMethod phải là "online" hoặc "cash"');
+  }
 
-  query("startDate")
-    .optional()
-    .isISO8601()
-    .withMessage("Ngày bắt đầu không hợp lệ"),
+  // recurringRule (required if bookingType is recurring)
+  if (body.bookingType === 'recurring') {
+    if (!body.recurringRule) {
+      errors.push('recurringRule là bắt buộc khi bookingType là "recurring"');
+    } else {
+      if (!body.recurringRule.frequency || !['weekly', 'biweekly', 'monthly'].includes(body.recurringRule.frequency)) {
+        errors.push('recurringRule.frequency phải là "weekly", "biweekly", hoặc "monthly"');
+      }
+      if (!body.recurringRule.endDate) {
+        errors.push('recurringRule.endDate là bắt buộc');
+      } else if (!isDateString(body.recurringRule.endDate)) {
+        errors.push('recurringRule.endDate không đúng định dạng ngày');
+      }
+    }
+  }
 
-  query("endDate")
-    .optional()
-    .isISO8601()
-    .withMessage("Ngày kết thúc không hợp lệ"),
-];
+  return errors;
+};
 
-const checkAvailabilityValidation = [
-  query("courtId")
-    .notEmpty()
-    .withMessage("Court ID không được để trống")
-    .isMongoId()
-    .withMessage("Court ID không hợp lệ"),
+const validateAddDrink = (body) => {
+  const errors = [];
 
-  query("date")
-    .notEmpty()
-    .withMessage("Ngày không được để trống")
-    .isISO8601()
-    .withMessage("Ngày không hợp lệ"),
+  if (!body.drinkId) {
+    errors.push('drinkId là bắt buộc');
+  } else if (!isObjectId(body.drinkId)) {
+    errors.push('drinkId không hợp lệ');
+  }
 
-  query("startTime")
-    .notEmpty()
-    .withMessage("Giờ bắt đầu không được để trống")
-    .matches(/^([01]\d|2[0-3]):([0-5]\d)$/)
-    .withMessage("Giờ bắt đầu phải có định dạng HH:mm"),
+  if (body.quantity === undefined || body.quantity === null) {
+    errors.push('quantity là bắt buộc');
+  } else if (!Number.isInteger(body.quantity) || body.quantity < 1) {
+    errors.push('quantity phải là số nguyên >= 1');
+  }
 
-  query("endTime")
-    .notEmpty()
-    .withMessage("Giờ kết thúc không được để trống")
-    .matches(/^([01]\d|2[0-3]):([0-5]\d)$/)
-    .withMessage("Giờ kết thúc phải có định dạng HH:mm"),
-];
+  return errors;
+};
+
+const validateUpdateBooking = (body) => {
+  const errors = [];
+
+  if (body.startTime !== undefined && !isTimeFormat(body.startTime)) {
+    errors.push('startTime phải có định dạng HH:mm');
+  }
+
+  if (body.endTime !== undefined && !isTimeFormat(body.endTime)) {
+    errors.push('endTime phải có định dạng HH:mm');
+  }
+
+  if (body.durationHours !== undefined) {
+    if (typeof body.durationHours !== 'number' || body.durationHours <= 0) {
+      errors.push('durationHours phải là số lớn hơn 0');
+    }
+  }
+
+  if (body.drinkUpdates !== undefined) {
+    if (!Array.isArray(body.drinkUpdates)) {
+      errors.push('drinkUpdates phải là một mảng');
+    } else {
+      body.drinkUpdates.forEach((update, index) => {
+        if (!update.drinkId || !isObjectId(update.drinkId)) {
+          errors.push(`drinkUpdates[${index}].drinkId không hợp lệ`);
+        }
+        if (!['add', 'remove'].includes(update.action)) {
+          errors.push(`drinkUpdates[${index}].action phải là "add" hoặc "remove"`);
+        }
+        if (update.action === 'add') {
+          if (!Number.isInteger(update.quantity) || update.quantity < 1) {
+            errors.push(`drinkUpdates[${index}].quantity phải là số nguyên >= 1`);
+          }
+        }
+      });
+    }
+  }
+
+  return errors;
+};
+
 module.exports = {
-  createBookingValidation,
-  checkAvailabilityValidation,
-  getCustomerBookingsValidation,
+  validateCreateBooking,
+  validateAddDrink,
+  validateUpdateBooking,
 };
