@@ -8,7 +8,7 @@ const MainLayout: React.FC = () => {
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
       <Header />
-      <Box component="main" sx={{ flex: 1 }}>
+      <Box component="main" sx={{ flex: 1,pb: 7 }}>
         <Outlet />
       </Box>
       <BottomNav />

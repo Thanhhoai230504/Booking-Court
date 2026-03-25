@@ -77,6 +77,7 @@ export interface Booking {
   bookingNumber: string;
   customerId: string | User;
   courtId: string | Court;
+  courtNumber?: number;
   adminId?: string;
   bookingType: 'single' | 'recurring';
   customerName: string;
@@ -104,6 +105,7 @@ export interface Booking {
 
 export interface CreateBookingRequest {
   courtId: string;
+  courtNumber?: number;
   startDate: string;
   startTime: string;
   endTime: string;

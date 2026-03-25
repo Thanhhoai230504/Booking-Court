@@ -2,12 +2,21 @@ import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import { Booking, CreateBookingRequest } from '../../types';
 import axiosPickleball from '../../api/axiosPickleball';
 
+interface CourtScheduleSlot {
+  _id: string;
+  startTime: string;
+  endTime: string;
+  status: string;
+  courtNumber?: number;
+}
+
 interface BookingState {
   bookings: Booking[];
   selectedBooking: Booking | null;
   isLoading: boolean;
   error: string | null;
   createSuccess: boolean;
+  courtSchedule: CourtScheduleSlot[];
 }
 
 const initialState: BookingState = {
@@ -16,6 +25,7 @@ const initialState: BookingState = {
   isLoading: false,
   error: null,
   createSuccess: false,
+  courtSchedule: [],
 };
 
 export const fetchMyBookings = createAsyncThunk<Booking[], { status?: string; startDate?: string; endDate?: string } | void>(
@@ -68,6 +78,21 @@ export const deleteBooking = createAsyncThunk<string, string>(
       return bookingId;
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.error || 'Hủy đặt sân thất bại');
+    }
+  }
+);
+
+export const fetchCourtSchedule = createAsyncThunk<
+  CourtScheduleSlot[],
+  { courtId: string; date: string }
+>(
+  'bookings/fetchCourtSchedule',
+  async ({ courtId, date }, { rejectWithValue }) => {
+    try {
+      const response = await axiosPickleball.get(`/bookings/court/${courtId}/schedule?date=${date}`);
+      return response.data;
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data?.error || 'Không thể tải lịch sân');
     }
   }
 );
@@ -125,6 +150,9 @@ const bookingSlice = createSlice({
       })
       .addCase(deleteBooking.fulfilled, (state, action: PayloadAction<string>) => {
         state.bookings = state.bookings.filter((b) => b._id !== action.payload);
+      })
+      .addCase(fetchCourtSchedule.fulfilled, (state, action: PayloadAction<CourtScheduleSlot[]>) => {
+        state.courtSchedule = action.payload;
       });
   },
 });
