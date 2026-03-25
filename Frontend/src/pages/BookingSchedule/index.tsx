@@ -34,7 +34,7 @@ import {
 } from '@mui/icons-material';
 import { AppDispatch, RootState } from '../../store/store';
 import { fetchCourtDetail } from '../../store/slices/courtSlice';
-import { createBooking, resetCreateSuccess } from '../../store/slices/bookingSlice';
+import { createBooking, resetCreateSuccess, fetchCourtSchedule } from '../../store/slices/bookingSlice';
 
 interface SelectedSlot {
   courtIndex: number;
@@ -46,7 +46,7 @@ const BookingSchedule: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
   const { selectedCourt: court } = useSelector((state: RootState) => state.courts);
-  const { isLoading, error, createSuccess } = useSelector((state: RootState) => state.bookings);
+  const { isLoading, error, createSuccess, courtSchedule } = useSelector((state: RootState) => state.bookings);
   const { user, isAuthenticated } = useSelector((state: RootState) => state.auth);
 
   const [selectedDate, setSelectedDate] = useState(() => {
@@ -69,6 +69,13 @@ const BookingSchedule: React.FC = () => {
       dispatch(resetCreateSuccess());
     };
   }, [courtId, dispatch]);
+
+  // Fetch booked slots from API when court or date changes
+  useEffect(() => {
+    if (courtId && selectedDate) {
+      dispatch(fetchCourtSchedule({ courtId, date: selectedDate }));
+    }
+  }, [courtId, selectedDate, dispatch]);
 
   useEffect(() => {
     if (user) {
@@ -104,25 +111,47 @@ const BookingSchedule: React.FC = () => {
     return Array.from({ length: count }, (_, i) => `Sân A${i + 1}`);
   }, [court]);
 
-  // Simulate some booked slots (random for demo — in production, fetch from API)
+  // Build booked slots set from real API data
   const bookedSlots = useMemo(() => {
     const booked = new Set<string>();
-    if (!court) return booked;
-    // Generate random booked slots for demo
-    const seed = selectedDate.split('-').reduce((a, b) => a + parseInt(b), 0);
-    for (let c = 0; c < courtNames.length; c++) {
-      for (let t = 0; t < timeSlots.length; t++) {
-        const hash = (seed * 31 + c * 17 + t * 13) % 100;
-        if (hash < 25) {
-          booked.add(`${c}-${timeSlots[t]}`);
+    if (!court || !courtSchedule || courtSchedule.length === 0) return booked;
+
+    // For each booking, expand its startTime-endTime into 30-minute slots
+    // Only mark the specific sub-court (courtNumber) as booked
+    courtSchedule.forEach((booking) => {
+      const courtIdx = booking.courtNumber ?? 0;
+      const [startH, startM] = booking.startTime.split(':').map(Number);
+      const [endH, endM] = booking.endTime.split(':').map(Number);
+      let h = startH;
+      let m = startM;
+      while (h < endH || (h === endH && m < endM)) {
+        const slotTime = `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
+        booked.add(`${courtIdx}-${slotTime}`);
+        m += 30;
+        if (m >= 60) {
+          m = 0;
+          h++;
         }
       }
-    }
+    });
+
     return booked;
-  }, [court, selectedDate, courtNames, timeSlots]);
+  }, [court, courtSchedule, courtNames]);
 
   const isSlotBooked = (courtIndex: number, time: string) => {
     return bookedSlots.has(`${courtIndex}-${time}`);
+  };
+
+  // Check if a slot is in the past (only for today)
+  const isSlotPast = (time: string) => {
+    const today = new Date();
+    const todayStr = today.toISOString().split('T')[0];
+    if (selectedDate !== todayStr) return false;
+    const [slotH, slotM] = time.split(':').map(Number);
+    const now = new Date();
+    const currentH = now.getHours();
+    const currentM = now.getMinutes();
+    return slotH < currentH || (slotH === currentH && slotM <= currentM);
   };
 
   const isSlotSelected = (courtIndex: number, time: string) => {
@@ -130,7 +159,7 @@ const BookingSchedule: React.FC = () => {
   };
 
   const toggleSlot = (courtIndex: number, time: string) => {
-    if (isSlotBooked(courtIndex, time)) return;
+    if (isSlotBooked(courtIndex, time) || isSlotPast(time)) return;
 
     setSelectedSlots((prev) => {
       const exists = prev.find((s) => s.courtIndex === courtIndex && s.timeSlot === time);
@@ -181,9 +210,12 @@ const BookingSchedule: React.FC = () => {
 
   const handleConfirmBooking = () => {
     if (!courtId || !bookingInfo) return;
+    // Get the first selected court index to send as courtNumber
+    const courtNumber = selectedSlots.length > 0 ? selectedSlots[0].courtIndex : 0;
     dispatch(
       createBooking({
         courtId,
+        courtNumber,
         startDate: selectedDate,
         startTime: bookingInfo.startTime,
         endTime: bookingInfo.endTime,
@@ -397,6 +429,8 @@ const BookingSchedule: React.FC = () => {
               {timeSlots.map((time) => {
                 const booked = isSlotBooked(courtIndex, time);
                 const selected = isSlotSelected(courtIndex, time);
+                const past = isSlotPast(time);
+                const disabled = booked || past;
 
                 return (
                   <Tooltip
@@ -404,6 +438,8 @@ const BookingSchedule: React.FC = () => {
                     title={
                       booked
                         ? 'Đã đặt'
+                        : past
+                        ? 'Đã qua giờ'
                         : selected
                         ? `${courtName} - ${time} (Đã chọn)`
                         : `${courtName} - ${time}`
@@ -417,17 +453,19 @@ const BookingSchedule: React.FC = () => {
                         height: 44,
                         borderLeft: '1px solid #e0e0e0',
                         borderBottom: '1px solid #e0e0e0',
-                        cursor: booked ? 'not-allowed' : 'pointer',
+                        cursor: disabled ? 'not-allowed' : 'pointer',
                         transition: 'all 0.15s ease',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
                         bgcolor: booked
                           ? '#C62828'
+                          : past
+                          ? '#BDBDBD'
                           : selected
                           ? '#006837'
                           : 'white',
-                        '&:hover': booked
+                        '&:hover': disabled
                           ? {}
                           : {
                               bgcolor: selected ? '#004D25' : '#E8F5E9',
