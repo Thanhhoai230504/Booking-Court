@@ -5,7 +5,8 @@ export interface User {
   name: string;
   email: string;
   phone?: string;
-  role: "customer" | "admin";
+  role: 'customer' | 'owner' | 'admin';
+  avatar?: string;
 }
 
 export interface AuthResponse {
@@ -24,8 +25,9 @@ export interface RegisterRequest {
   email: string;
   phone: string;
   password: string;
-  role?: "customer" | "admin";
+  role?: 'customer' | 'owner' | 'admin';
 }
+
 // Court types
 export interface OpeningHours {
   start: string;
@@ -43,7 +45,7 @@ export interface Court {
   address: string;
   city?: string;
   pricePerHour: number;
-  status: "active" | "maintenance" | "inactive";
+  status: 'active' | 'maintenance' | 'inactive';
   images: string[];
   description?: string;
   totalCourts: number;
@@ -116,4 +118,105 @@ export interface CreateBookingRequest {
   paymentMethod: 'online' | 'cash';
   paymentProof?: string;
   recurringRule?: RecurringRule;
+}
+
+// Drink types
+export interface Drink {
+  _id: string;
+  name: string;
+  price: number;
+  quantity: number;
+  minStock: number;
+  description?: string;
+  image?: string;
+  adminId?: string;
+}
+
+// Admin types
+export interface DashboardData {
+  totalRevenue: number;
+  courtRevenue: number;
+  drinkRevenue: number;
+  transactionCount: number;
+  revenues: Array<{
+    _id: string;
+    bookingId: { _id: string; bookingNumber: string };
+    courtId: { _id: string; name: string };
+    courtRevenue: number;
+    drinkRevenue: number;
+    totalRevenue: number;
+    date: string;
+    completedAt: string;
+  }>;
+}
+
+export interface RevenueByDate {
+  _id: string;
+  totalRevenue: number;
+  courtRevenue: number;
+  drinkRevenue: number;
+  transactionCount: number;
+}
+
+export interface RevenueByMonth {
+  _id: string;
+  totalRevenue: number;
+  courtRevenue: number;
+  drinkRevenue: number;
+  transactionCount: number;
+}
+
+export interface RevenueByCourt {
+  _id: string;
+  totalRevenue: number;
+  courtRevenue: number;
+  drinkRevenue: number;
+  transactionCount: number;
+  courtDetails: {
+    _id: string;
+    name: string;
+    address: string;
+  };
+}
+
+export interface CreateCourtRequest {
+  name: string;
+  address: string;
+  city?: string;
+  description?: string;
+  totalCourts: number;
+  pricePerHour: number;
+  openingHours?: { start: string; end: string };
+  hourlyPricing?: HourlyPricing[];
+  images?: string[];
+}
+
+export interface UpdateCourtRequest {
+  name?: string;
+  address?: string;
+  city?: string;
+  description?: string;
+  totalCourts?: number;
+  pricePerHour?: number;
+  status?: 'active' | 'maintenance' | 'inactive';
+  openingHours?: { start: string; end: string };
+  hourlyPricing?: HourlyPricing[];
+  images?: string[];
+}
+
+export interface CreateDrinkRequest {
+  name: string;
+  price: number;
+  quantity?: number;
+  minStock?: number;
+  description?: string;
+  image?: string;
+}
+
+export interface UpdateDrinkRequest {
+  name?: string;
+  price?: number;
+  minStock?: number;
+  description?: string;
+  image?: string;
 }
