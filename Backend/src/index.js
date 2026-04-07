@@ -6,6 +6,7 @@ const cors = require("cors");
 const authRoutes = require("./routes/auth");
 const courtRoutes = require("./routes/court");
 const bookingRoutes = require("./routes/booking");
+const revenueRoutes = require('./routes/revenue');
 
 const app = express();
 
@@ -20,6 +21,7 @@ mongoose
 app.use("/api/auth", authRoutes);
 app.use("/api/courts", courtRoutes);
 app.use("/api/bookings", bookingRoutes);
+app.use('/api/revenue', revenueRoutes);
 
 app.get("/health", (req, res) => {
   res.json({ status: "OK" });
