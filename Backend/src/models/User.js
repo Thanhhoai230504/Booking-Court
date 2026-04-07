@@ -23,12 +23,16 @@ const userSchema = new mongoose.Schema(
     },
     role: {
       type: String,
-      enum: ["customer", "admin"],
+      enum: ["customer", "owner", "admin"],
       default: "customer",
     },
-    isAdmin: {
+    avatar: {
+      type: String,
+      default: '',
+    },
+    isActive: {
       type: Boolean,
-      default: false,
+      default: true,
     },
     createdAt: {
       type: Date,
