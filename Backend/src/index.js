@@ -2,17 +2,19 @@ require("dotenv").config();
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
+const path = require("path");
 
 const authRoutes = require("./routes/auth");
 const courtRoutes = require("./routes/court");
 const bookingRoutes = require("./routes/booking");
-const revenueRoutes = require('./routes/revenue');
-const drinkRoutes = require('./routes/drink');
+const revenueRoutes = require("./routes/revenue");
+const drinkRoutes = require("./routes/drink");
 
 const app = express();
 
 app.use(cors());
 app.use(express.json());
+app.use("/uploads", express.static(path.join(__dirname, "..", "uploads")));
 
 mongoose
   .connect(process.env.MONGODB_URI, { dbName: "pickleball_booking" })
@@ -22,8 +24,8 @@ mongoose
 app.use("/api/auth", authRoutes);
 app.use("/api/courts", courtRoutes);
 app.use("/api/bookings", bookingRoutes);
-app.use('/api/revenue', revenueRoutes);
-app.use('/api/drinks', drinkRoutes);
+app.use("/api/revenue", revenueRoutes);
+app.use("/api/drinks", drinkRoutes);
 
 app.get("/health", (req, res) => {
   res.json({ status: "OK" });

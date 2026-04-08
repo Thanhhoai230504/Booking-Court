@@ -5,7 +5,7 @@ export interface User {
   name: string;
   email: string;
   phone?: string;
-  role: "customer" | "admin";
+  role: "customer" | "admin" | "owner";
 }
 
 export interface AuthResponse {
@@ -24,7 +24,7 @@ export interface RegisterRequest {
   email: string;
   phone: string;
   password: string;
-  role?: "customer" | "admin";
+  role: "customer" | "admin" | "owner";
 }
 // Court types
 export interface OpeningHours {
@@ -67,7 +67,7 @@ export interface DrinkItem {
 }
 
 export interface RecurringRule {
-  frequency: 'weekly' | 'biweekly' | 'monthly';
+  frequency: "weekly" | "biweekly" | "monthly";
   interval: number;
   endDate: string;
 }
@@ -79,7 +79,7 @@ export interface Booking {
   courtId: string | Court;
   courtNumber?: number;
   adminId?: string;
-  bookingType: 'single' | 'recurring';
+  bookingType: "single" | "recurring";
   customerName: string;
   customerPhone: string;
   startDate: string;
@@ -91,9 +91,14 @@ export interface Booking {
   drinkItems: DrinkItem[];
   totalDrinkPrice: number;
   totalPrice: number;
-  status: 'PENDING_APPROVAL' | 'CONFIRMED' | 'PLAYING' | 'COMPLETED' | 'CANCELLED';
-  paymentMethod: 'online' | 'cash';
-  paymentStatus: 'pending' | 'completed' | 'failed';
+  status:
+    | "PENDING_APPROVAL"
+    | "CONFIRMED"
+    | "PLAYING"
+    | "COMPLETED"
+    | "CANCELLED";
+  paymentMethod: "online" | "cash";
+  paymentStatus: "pending" | "completed" | "failed";
   paymentProof?: string;
   recurringRule?: RecurringRule;
   notes?: string;
@@ -112,8 +117,8 @@ export interface CreateBookingRequest {
   durationHours: number;
   customerName: string;
   customerPhone: string;
-  bookingType: 'single' | 'recurring';
-  paymentMethod: 'online' | 'cash';
+  bookingType: "single" | "recurring";
+  paymentMethod: "online" | "cash";
   paymentProof?: string;
   recurringRule?: RecurringRule;
 }
@@ -196,7 +201,7 @@ export interface UpdateCourtRequest {
   description?: string;
   totalCourts?: number;
   pricePerHour?: number;
-  status?: 'active' | 'maintenance' | 'inactive';
+  status?: "active" | "maintenance" | "inactive";
   openingHours?: { start: string; end: string };
   hourlyPricing?: HourlyPricing[];
   images?: string[];
