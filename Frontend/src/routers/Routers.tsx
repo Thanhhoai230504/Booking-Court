@@ -3,9 +3,19 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import MainLayout from "@/layout/MainLayout/MainLayout";
 import Home from "@/pages/Home";
 import CourtDetail from "@/pages/CourtDetail";
-import { Login, SignUp, FavoriteCourts, MyBookings, AccountPage } from "../pages";
+import {
+  Login,
+  SignUp,
+  FavoriteCourts,
+  MyBookings,
+  AccountPage,
+} from "../pages";
 import BookingSchedule from "@/pages/BookingSchedule";
-import Booking from '@/pages/Booking';
+import Booking from "@/pages/Booking";
+import AdminLayout from "@/layout/AdminLayout/AdminLayout";
+import AdminGuard from "@/components/AdminGuard/AdminGuard";
+import AdminCourts from "@/pages/admin/AdminCourts";
+import AdminDrinks from "@/pages/admin/AdminDrinks";
 const Routers: React.FC = () => {
   return (
     <BrowserRouter>
@@ -24,6 +34,17 @@ const Routers: React.FC = () => {
           <Route path="/my-bookings" element={<MyBookings />} />
           <Route path="/booking/:courtId" element={<Booking />} />
           <Route path="/account" element={<AccountPage />} />
+        </Route>
+
+        <Route
+          element={
+            <AdminGuard>
+              <AdminLayout />
+            </AdminGuard>
+          }
+        >
+          <Route path="/admin/courts" element={<AdminCourts />} />
+          <Route path="/admin/drinks" element={<AdminDrinks />} />
         </Route>
       </Routes>
     </BrowserRouter>
