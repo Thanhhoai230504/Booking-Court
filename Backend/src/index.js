@@ -7,6 +7,7 @@ const authRoutes = require("./routes/auth");
 const courtRoutes = require("./routes/court");
 const bookingRoutes = require("./routes/booking");
 const revenueRoutes = require('./routes/revenue');
+const drinkRoutes = require('./routes/drink');
 
 const app = express();
 
@@ -22,6 +23,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/courts", courtRoutes);
 app.use("/api/bookings", bookingRoutes);
 app.use('/api/revenue', revenueRoutes);
+app.use('/api/drinks', drinkRoutes);
 
 app.get("/health", (req, res) => {
   res.json({ status: "OK" });
