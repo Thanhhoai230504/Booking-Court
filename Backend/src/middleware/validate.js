@@ -14,7 +14,11 @@ const isDateString = (value) => !isNaN(Date.parse(value));
 
 // ===== Validate Middleware Factory =====
 
-
+/**
+ * Tạo middleware validate cho req.body
+ * @param {Function} schemaFn - Hàm nhận req.body và trả về mảng lỗi
+ * @returns {Function} Express middleware
+ */
 const validate = (schemaFn) => {
   return (req, res, next) => {
     const errors = schemaFn(req.body, req);
@@ -28,6 +32,9 @@ const validate = (schemaFn) => {
   };
 };
 
+/**
+ * Tạo middleware validate cho req.query
+ */
 const validateQuery = (schemaFn) => {
   return (req, res, next) => {
     const errors = schemaFn(req.query, req);
@@ -41,6 +48,10 @@ const validateQuery = (schemaFn) => {
   };
 };
 
+/**
+ * Tạo middleware chỉ cho phép các field trong whitelist
+ * Xoá các field không hợp lệ khỏi req.body
+ */
 const sanitizeBody = (allowedFields) => {
   return (req, res, next) => {
     const sanitized = {};
@@ -54,10 +65,53 @@ const sanitizeBody = (allowedFields) => {
   };
 };
 
+/**
+ * Middleware để parse numeric fields từ FormData
+ * FormData gửi mọi giá trị dưới dạng string, middleware này convert thành number
+ */
+const parseCourtFormData = (req, res, next) => {
+  // Parse pricePerHour nếu tồn tại
+  if (req.body.pricePerHour) {
+    const parsed = parseFloat(req.body.pricePerHour);
+    if (!isNaN(parsed)) {
+      req.body.pricePerHour = parsed;
+    }
+  }
+
+  // Parse totalCourts nếu tồn tại
+  if (req.body.totalCourts) {
+    const parsed = parseInt(req.body.totalCourts, 10);
+    if (!isNaN(parsed)) {
+      req.body.totalCourts = parsed;
+    }
+  }
+
+  // Parse openingHours nếu tồn tại (JSON string)
+  if (req.body.openingHours && typeof req.body.openingHours === 'string') {
+    try {
+      req.body.openingHours = JSON.parse(req.body.openingHours);
+    } catch (e) {
+      // Nếu parse failed, để nguyên giá trị string
+    }
+  }
+
+  // Parse hourlyPricing nếu tồn tại (JSON string)
+  if (req.body.hourlyPricing && typeof req.body.hourlyPricing === 'string') {
+    try {
+      req.body.hourlyPricing = JSON.parse(req.body.hourlyPricing);
+    } catch (e) {
+      // Nếu parse failed, để nguyên giá trị string
+    }
+  }
+
+  next();
+};
+
 module.exports = {
   validate,
   validateQuery,
   sanitizeBody,
+  parseCourtFormData,
   isEmail,
   isPhone,
   isObjectId,
