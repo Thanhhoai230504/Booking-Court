@@ -1,12 +1,11 @@
 const express = require("express");
-const { validationResult } = require("express-validator");
-const { auth, adminAuth } = require("../middleware/auth");
+const { auth, ownerAuth } = require("../middleware/auth");
+const { uploadCourtImages } = require("../middleware/upload");
+const { validate, sanitizeBody } = require("../middleware/validate");
 const {
-  createCourtValidation,
-  updateCourtValidation,
-  courtIdParamValidation,
-  getAvailableCourtsValidation,
-  adminCourtsValidation,
+  validateCreateCourt,
+  validateUpdateCourt,
+  COURT_UPDATE_FIELDS,
 } = require("../validators/courtValidator");
 const {
   getAvailableCourts,
@@ -19,51 +18,24 @@ const {
 
 const router = express.Router();
 
-// Middleware xử lý kết quả validation từ express-validator
-const handleValidation = (req, res, next) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res
-      .status(400)
-      .json({ error: "Validation failed", details: errors.array() });
-  }
-  next();
-};
-
-router.get(
-  "/available",
-  getAvailableCourtsValidation,
-  handleValidation,
-  getAvailableCourts,
-);
-router.get("/:id", courtIdParamValidation, handleValidation, getCourtById);
+router.get("/available", getAvailableCourts);
+router.get("/:id", getCourtById);
 router.post(
   "/",
-  adminAuth,
-  createCourtValidation,
-  handleValidation,
+  ownerAuth,
+  uploadCourtImages,
+  validate(validateCreateCourt),
   createCourt,
 );
 router.put(
   "/:id",
-  adminAuth,
-  updateCourtValidation,
-  handleValidation,
+  ownerAuth,
+  uploadCourtImages,
+  sanitizeBody(COURT_UPDATE_FIELDS),
+  validate(validateUpdateCourt),
   updateCourt,
 );
-router.get(
-  "/admin/:adminId/courts",
-  adminAuth,
-  adminCourtsValidation,
-  handleValidation,
-  getAdminCourts,
-);
-router.delete(
-  "/:id",
-  adminAuth,
-  courtIdParamValidation,
-  handleValidation,
-  deleteCourt,
-);
+router.delete("/:id", ownerAuth, deleteCourt);
+router.get("/admin/:adminId/courts", ownerAuth, getAdminCourts);
 
 module.exports = router;
