@@ -28,7 +28,8 @@ const Home: React.FC = () => {
     (state: RootState) => state.courts,
   );
   const [searchTerm, setSearchTerm] = useState("");
-  const [cityFilter, setCityFilter] = useState("");
+  const [districtFilter, setDistrictFilter] = useState("");
+  const [maxPrice, setMaxPrice] = useState<number | "">("");
 
   useEffect(() => {
     dispatch(fetchAvailableCourts());
@@ -42,18 +43,22 @@ const Home: React.FC = () => {
         (court) =>
           court.name.toLowerCase().includes(search) ||
           court.address.toLowerCase().includes(search) ||
-          (court.city && court.city.toLowerCase().includes(search)),
+          (court.city && court.city.toLowerCase().includes(search)) ||
+          (court.district && court.district.toLowerCase().includes(search)),
       );
     }
-    if (cityFilter) {
-      filtered = filtered.filter((court) => court.city === cityFilter);
+    if (districtFilter) {
+      filtered = filtered.filter((court) => court.district === districtFilter);
+    }
+    if (maxPrice) {
+      filtered = filtered.filter((court) => court.pricePerHour <= Number(maxPrice));
     }
     return filtered;
-  }, [courts, searchTerm, cityFilter]);
+  }, [courts, searchTerm, districtFilter, maxPrice]);
 
-  const cities = useMemo(() => {
-    const citySet = new Set(courts.map((c) => c.city).filter(Boolean));
-    return Array.from(citySet) as string[];
+  const districts = useMemo(() => {
+    const districtSet = new Set(courts.map((c) => c.district).filter(Boolean));
+    return Array.from(districtSet) as string[];
   }, [courts]);
 
   return (
@@ -95,24 +100,41 @@ const Home: React.FC = () => {
               </Typography>
             </Box>
 
-            {cities.length > 0 && (
+            {districts.length > 0 && (
               <FormControl size="small" sx={{ minWidth: 160 }}>
-                <InputLabel>Thành phố</InputLabel>
+                <InputLabel>Quận/Huyện</InputLabel>
                 <Select
-                  value={cityFilter}
-                  label="Thành phố"
-                  onChange={(e) => setCityFilter(e.target.value)}
+                  value={districtFilter}
+                  label="Quận/Huyện"
+                  onChange={(e) => setDistrictFilter(e.target.value)}
                   sx={{ borderRadius: 2 }}
                 >
                   <MenuItem value="">Tất cả</MenuItem>
-                  {cities.map((city) => (
-                    <MenuItem key={city} value={city}>
-                      {city}
+                  {districts.map((district) => (
+                    <MenuItem key={district} value={district}>
+                      {district}
                     </MenuItem>
                   ))}
                 </Select>
               </FormControl>
             )}
+
+            <FormControl size="small" sx={{ minWidth: 160 }}>
+              <InputLabel>Giá tối đa</InputLabel>
+              <Select
+                value={maxPrice}
+                label="Giá tối đa"
+                onChange={(e) => setMaxPrice(e.target.value as number | "")}
+                sx={{ borderRadius: 2 }}
+              >
+                <MenuItem value="">Tất cả</MenuItem>
+                <MenuItem value={100000}>Dưới 100.000đ</MenuItem>
+                <MenuItem value={150000}>Dưới 150.000đ</MenuItem>
+                <MenuItem value={200000}>Dưới 200.000đ</MenuItem>
+                <MenuItem value={300000}>Dưới 300.000đ</MenuItem>
+                <MenuItem value={500000}>Dưới 500.000đ</MenuItem>
+              </Select>
+            </FormControl>
 
             <Box sx={{ flex: 1 }} />
 

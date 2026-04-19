@@ -303,6 +303,7 @@ const CourtDetail: React.FC = () => {
                       </Typography>
                       <Typography fontWeight={600}>
                         {court.address}
+                        {court.district ? `, ${court.district}` : ""}
                         {court.city ? `, ${court.city}` : ""}
                       </Typography>
                     </Box>

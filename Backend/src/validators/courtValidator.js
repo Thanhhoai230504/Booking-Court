@@ -157,6 +157,7 @@ const COURT_UPDATE_FIELDS = [
   "name",
   "address",
   "city",
+  "district",
   "images",
   "description",
   "totalCourts",
