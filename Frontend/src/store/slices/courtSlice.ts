@@ -18,12 +18,12 @@ const initialState: CourtState = {
 
 export const fetchAvailableCourts = createAsyncThunk<
   Court[],
-  { city?: string; date?: string; maxPrice?: number } | void
+  { district?: string; date?: string; maxPrice?: number } | void
 >("courts/fetchAvailable", async (params, { rejectWithValue }) => {
   try {
     const queryParams = new URLSearchParams();
     if (params) {
-      if (params.city) queryParams.append("city", params.city);
+      if (params.district) queryParams.append("district", params.district);
       if (params.date) queryParams.append("date", params.date);
       if (params.maxPrice)
         queryParams.append("maxPrice", params.maxPrice.toString());

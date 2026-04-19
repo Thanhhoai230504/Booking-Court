@@ -58,6 +58,7 @@ const AdminCourts: React.FC = () => {
     name: '',
     address: '',
     city: '',
+    district: '',
     description: '',
     totalCourts: 1,
     pricePerHour: 0,
@@ -77,7 +78,7 @@ const AdminCourts: React.FC = () => {
   const handleOpenCreate = () => {
     setEditingCourt(null);
     setForm({
-      name: '', address: '', city: '', description: '',
+      name: '', address: '', city: '', district: '', description: '',
       totalCourts: 1, pricePerHour: 0, status: 'active',
       openStart: '06:00', openEnd: '22:00',
     });
@@ -92,6 +93,7 @@ const AdminCourts: React.FC = () => {
       name: court.name,
       address: court.address,
       city: court.city || '',
+      district: court.district || '',
       description: court.description || '',
       totalCourts: court.totalCourts,
       pricePerHour: court.pricePerHour,
@@ -109,7 +111,7 @@ const AdminCourts: React.FC = () => {
       if (editingCourt) {
         const data: Record<string, any> = {
           name: form.name, address: form.address,
-          city: form.city || undefined, description: form.description || undefined,
+          city: form.city || undefined, district: form.district || undefined, description: form.description || undefined,
           totalCourts: form.totalCourts, pricePerHour: form.pricePerHour,
           status: form.status,
           openingHours: { start: form.openStart, end: form.openEnd },
@@ -119,7 +121,7 @@ const AdminCourts: React.FC = () => {
       } else {
         const data: Record<string, any> = {
           name: form.name, address: form.address,
-          city: form.city || undefined, description: form.description || undefined,
+          city: form.city || undefined, district: form.district || undefined, description: form.description || undefined,
           totalCourts: form.totalCourts, pricePerHour: form.pricePerHour,
           openingHours: { start: form.openStart, end: form.openEnd },
         };
@@ -266,6 +268,7 @@ const AdminCourts: React.FC = () => {
                         <LocationIcon sx={{ fontSize: 16, color: '#9e9e9e' }} />
                         <Box>
                           <Typography fontSize="0.85rem">{court.address}</Typography>
+                          {court.district && <Typography fontSize="0.75rem" color="text.secondary">{court.district}</Typography>}
                           {court.city && <Typography fontSize="0.75rem" color="text.secondary">{court.city}</Typography>}
                         </Box>
                       </Box>
@@ -389,6 +392,9 @@ const AdminCourts: React.FC = () => {
             </Grid>
             <Grid item xs={6}>
               <TextField fullWidth label="Thành phố" value={form.city} onChange={(e) => setForm({ ...form, city: e.target.value })} size="small" />
+            </Grid>
+            <Grid item xs={6}>
+              <TextField fullWidth label="Quận/Huyện" value={form.district} onChange={(e) => setForm({ ...form, district: e.target.value })} size="small" />
             </Grid>
             <Grid item xs={6}>
               <TextField fullWidth label="Số sân *" type="number" value={form.totalCourts} onChange={(e) => setForm({ ...form, totalCourts: Number(e.target.value) })} size="small" inputProps={{ min: 1 }} />

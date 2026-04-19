@@ -42,6 +42,7 @@ export interface Court {
   name: string;
   address: string;
   city?: string;
+  district?: string;
   pricePerHour: number;
   status: "active" | "maintenance" | "inactive";
   images: string[];
@@ -186,6 +187,7 @@ export interface CreateCourtRequest {
   name: string;
   address: string;
   city?: string;
+  district?: string;
   description?: string;
   totalCourts: number;
   pricePerHour: number;
@@ -198,6 +200,7 @@ export interface UpdateCourtRequest {
   name?: string;
   address?: string;
   city?: string;
+  district?: string;
   description?: string;
   totalCourts?: number;
   pricePerHour?: number;

@@ -209,6 +209,7 @@ const CourtCard: React.FC<CourtCardProps> = ({ court }) => {
             }}
           >
             {court.address}
+            {court.district ? `, ${court.district}` : ""}
             {court.city ? `, ${court.city}` : ""}
           </Typography>
         </Box>

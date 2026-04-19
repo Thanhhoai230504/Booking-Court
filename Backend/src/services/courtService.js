@@ -3,12 +3,12 @@ const { deleteFile } = require("../middleware/upload");
 const path = require("path");
 
 const getAvailableCourts = async (filters) => {
-  const { city, maxPrice } = filters;
+  const { district, maxPrice } = filters;
 
   let filter = { status: "active" };
 
-  if (city) filter.city = city;
-  if (maxPrice) filter.pricePerHour = { $lte: maxPrice };
+  if (district) filter.district = district;
+  if (maxPrice) filter.pricePerHour = { $lte: Number(maxPrice) };
 
   const courts = await Court.find(filter).select("-adminId");
   return courts;
@@ -31,6 +31,7 @@ const createCourt = async (userId, courtData, imagePaths = []) => {
     name,
     address,
     city,
+    district,
     description,
     totalCourts,
     pricePerHour,
@@ -42,6 +43,7 @@ const createCourt = async (userId, courtData, imagePaths = []) => {
     name,
     address,
     city,
+    district,
     images: imagePaths,
     description,
     totalCourts: totalCourts || 1,
@@ -85,6 +87,7 @@ const updateCourt = async (
     "name",
     "address",
     "city",
+    "district",
     "description",
     "totalCourts",
     "pricePerHour",

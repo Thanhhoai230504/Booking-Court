@@ -11,6 +11,7 @@ const courtSchema = new mongoose.Schema(
       required: true,
     },
     city: String,
+    district: String,
     images: [String],
     description: String,
     totalCourts: {
