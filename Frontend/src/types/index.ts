@@ -6,6 +6,7 @@ export interface User {
   email: string;
   phone?: string;
   role: "customer" | "admin" | "owner";
+  avatar?: string;
 }
 
 export interface AuthResponse {
@@ -24,7 +25,7 @@ export interface RegisterRequest {
   email: string;
   phone: string;
   password: string;
-  role: "customer" | "admin" | "owner";
+  role?: "customer" | "admin" | "owner";
 }
 // Court types
 export interface OpeningHours {
