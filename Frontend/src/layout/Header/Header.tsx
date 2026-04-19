@@ -227,6 +227,7 @@ const Header: React.FC = () => {
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                 <IconButton onClick={handleProfileClick} sx={{ p: 0.5 }}>
                   <Avatar
+                    src={user?.avatar || undefined}
                     sx={{
                       bgcolor: '#4CAF50',
                       width: 38,
@@ -236,7 +237,7 @@ const Header: React.FC = () => {
                       border: '2px solid rgba(255,255,255,0.5)',
                     }}
                   >
-                    {user?.name?.charAt(0).toUpperCase()}
+                    {!user?.avatar && user?.name?.charAt(0).toUpperCase()}
                   </Avatar>
                 </IconButton>
                 {!isMobile && (
