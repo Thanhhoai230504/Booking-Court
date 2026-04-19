@@ -9,6 +9,7 @@ import {
   FavoriteCourts,
   MyBookings,
   AccountPage,
+  AdminBookings,
 } from "../pages";
 import BookingSchedule from "@/pages/BookingSchedule";
 import Booking from "@/pages/Booking";
@@ -45,6 +46,7 @@ const Routers: React.FC = () => {
         >
           <Route path="/admin/courts" element={<AdminCourts />} />
           <Route path="/admin/drinks" element={<AdminDrinks />} />
+          <Route path="/admin/bookings" element={<AdminBookings />} />
         </Route>
       </Routes>
     </BrowserRouter>
