@@ -13,6 +13,7 @@ export { default as AdminDashboard } from './admin/AdminDashboard';
 export { default as AdminCourts } from './admin/AdminCourts';
 export { default as AdminDrinks } from './admin/AdminDrinks';
 export { default as AdminRevenue } from './admin/AdminRevenue';
+export { default as AdminBookings } from './admin/AdminBookings';
 
 // Admin Management pages (admin only)
 export { default as AdminManagementDashboard } from './admin-management/AdminManagementDashboard';
