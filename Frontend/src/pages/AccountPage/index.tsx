@@ -128,6 +128,7 @@ const AccountPage: React.FC = () => {
             >
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                     <Avatar
+                        src={user.avatar ? `${user.avatar}` : undefined}
                         sx={{
                             width: 64,
                             height: 64,
@@ -137,7 +138,7 @@ const AccountPage: React.FC = () => {
                             fontWeight: 700,
                         }}
                     >
-                        {user.name.charAt(0)}
+                        {!user.avatar && user.name.charAt(0)}
                     </Avatar>
                     <Box>
                         <Typography variant="h6" sx={{ color: 'white', fontWeight: 700 }}>
