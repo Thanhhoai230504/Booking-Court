@@ -1,4 +1,4 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import {
   Court,
   Booking,
@@ -7,9 +7,8 @@ import {
   RevenueByDate,
   RevenueByMonth,
   RevenueByCourt,
-} from '../../types';
-import adminService from '@/services/adminService';
-
+} from "../../types";
+import adminService from "@/services/adminService";
 
 interface AdminState {
   courts: Court[];
@@ -37,237 +36,325 @@ const initialState: AdminState = {
 
 // ---- Court thunks ----
 export const fetchAdminCourts = createAsyncThunk(
-  'admin/fetchCourts',
+  "admin/fetchCourts",
   async (adminId: string, { rejectWithValue }) => {
     try {
       return await adminService.getAdminCourts(adminId);
     } catch (error: any) {
-      return rejectWithValue(error.response?.data?.error || 'Lỗi tải danh sách sân');
+      return rejectWithValue(
+        error.response?.data?.error || "Lỗi tải danh sách sân",
+      );
     }
-  }
+  },
 );
 
 export const createCourt = createAsyncThunk(
-  'admin/createCourt',
-  async ({ data, imageFiles }: { data: Record<string, any>; imageFiles?: File[] }, { rejectWithValue }) => {
+  "admin/createCourt",
+  async (
+    { data, imageFiles }: { data: Record<string, any>; imageFiles?: File[] },
+    { rejectWithValue },
+  ) => {
     try {
       const result = await adminService.createCourt(data, imageFiles);
       return result.court;
     } catch (error: any) {
-      return rejectWithValue(error.response?.data?.error || 'Lỗi tạo sân');
+      return rejectWithValue(error.response?.data?.error || "Lỗi tạo sân");
     }
-  }
+  },
 );
 
 export const updateCourt = createAsyncThunk(
-  'admin/updateCourt',
-  async ({ id, data, imageFiles }: { id: string; data: Record<string, any>; imageFiles?: File[] }, { rejectWithValue }) => {
+  "admin/updateCourt",
+  async (
+    {
+      id,
+      data,
+      imageFiles,
+    }: { id: string; data: Record<string, any>; imageFiles?: File[] },
+    { rejectWithValue },
+  ) => {
     try {
       const result = await adminService.updateCourt(id, data, imageFiles);
       return result.court;
     } catch (error: any) {
-      return rejectWithValue(error.response?.data?.error || 'Lỗi cập nhật sân');
+      return rejectWithValue(error.response?.data?.error || "Lỗi cập nhật sân");
     }
-  }
+  },
 );
 
 export const deleteCourt = createAsyncThunk(
-  'admin/deleteCourt',
+  "admin/deleteCourt",
   async (id: string, { rejectWithValue }) => {
     try {
       await adminService.deleteCourt(id);
       return id;
     } catch (error: any) {
-      return rejectWithValue(error.response?.data?.error || 'Lỗi xóa sân');
+      return rejectWithValue(error.response?.data?.error || "Lỗi xóa sân");
     }
-  }
+  },
 );
 
 // ---- Booking thunks ----
 export const fetchAdminBookings = createAsyncThunk(
-  'admin/fetchBookings',
+  "admin/fetchBookings",
   async (
-    { adminId, params }: { adminId: string; params?: { status?: string; startDate?: string; endDate?: string } },
-    { rejectWithValue }
+    {
+      adminId,
+      params,
+    }: {
+      adminId: string;
+      params?: { status?: string; startDate?: string; endDate?: string };
+    },
+    { rejectWithValue },
   ) => {
     try {
       return await adminService.getAdminBookings(adminId, params);
     } catch (error: any) {
-      return rejectWithValue(error.response?.data?.error || 'Lỗi tải danh sách đặt sân');
+      return rejectWithValue(
+        error.response?.data?.error || "Lỗi tải danh sách đặt sân",
+      );
     }
-  }
+  },
 );
 
 export const approveBooking = createAsyncThunk(
-  'admin/approveBooking',
+  "admin/approveBooking",
   async (id: string, { rejectWithValue }) => {
     try {
       const result = await adminService.approveBooking(id);
       return result.booking;
     } catch (error: any) {
-      return rejectWithValue(error.response?.data?.error || 'Lỗi duyệt booking');
+      return rejectWithValue(
+        error.response?.data?.error || "Lỗi duyệt booking",
+      );
     }
-  }
+  },
 );
 
 export const rejectBooking = createAsyncThunk(
-  'admin/rejectBooking',
+  "admin/rejectBooking",
   async (id: string, { rejectWithValue }) => {
     try {
       const result = await adminService.rejectBooking(id);
       return result.booking;
     } catch (error: any) {
-      return rejectWithValue(error.response?.data?.error || 'Lỗi từ chối booking');
+      return rejectWithValue(
+        error.response?.data?.error || "Lỗi từ chối booking",
+      );
     }
-  }
+  },
 );
 
 export const completeBooking = createAsyncThunk(
-  'admin/completeBooking',
+  "admin/completeBooking",
   async (id: string, { rejectWithValue }) => {
     try {
       const result = await adminService.completeBooking(id);
       return result.booking;
     } catch (error: any) {
-      return rejectWithValue(error.response?.data?.error || 'Lỗi hoàn thành booking');
+      return rejectWithValue(
+        error.response?.data?.error || "Lỗi hoàn thành booking",
+      );
     }
-  }
+  },
 );
 
 export const addDrinkToBooking = createAsyncThunk(
-  'admin/addDrinkToBooking',
+  "admin/addDrinkToBooking",
   async (
-    { bookingId, data }: { bookingId: string; data: { drinkId: string; quantity: number } },
-    { rejectWithValue }
+    {
+      bookingId,
+      data,
+    }: { bookingId: string; data: { drinkId: string; quantity: number } },
+    { rejectWithValue },
   ) => {
     try {
       const result = await adminService.addDrinkToBooking(bookingId, data);
       return result.booking;
     } catch (error: any) {
-      return rejectWithValue(error.response?.data?.error || 'Lỗi thêm đồ uống');
+      return rejectWithValue(error.response?.data?.error || "Lỗi thêm đồ uống");
     }
-  }
+  },
+);
+export const updateBookingCourt = createAsyncThunk(
+  "admin/updateBookingCourt",
+  async (
+    {
+      bookingId,
+      data,
+    }: {
+      bookingId: string;
+      data: { courtId?: string; courtNumber?: number; notes?: string };
+    },
+    { rejectWithValue },
+  ) => {
+    try {
+      const result = await adminService.updateBooking(bookingId, data);
+      return result.booking;
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data?.error || "Lỗi chuyển sân");
+    }
+  },
 );
 
 // ---- Drink thunks ----
 export const fetchAdminDrinks = createAsyncThunk(
-  'admin/fetchDrinks',
+  "admin/fetchDrinks",
   async (adminId: string, { rejectWithValue }) => {
     try {
       return await adminService.getAdminDrinks(adminId);
     } catch (error: any) {
-      return rejectWithValue(error.response?.data?.error || 'Lỗi tải danh sách đồ uống');
+      return rejectWithValue(
+        error.response?.data?.error || "Lỗi tải danh sách đồ uống",
+      );
     }
-  }
+  },
 );
 
 export const createDrink = createAsyncThunk(
-  'admin/createDrink',
-  async ({ data, imageFile }: { data: Record<string, any>; imageFile?: File }, { rejectWithValue }) => {
+  "admin/createDrink",
+  async (
+    { data, imageFile }: { data: Record<string, any>; imageFile?: File },
+    { rejectWithValue },
+  ) => {
     try {
       const result = await adminService.createDrink(data, imageFile);
       return result.drink;
     } catch (error: any) {
-      return rejectWithValue(error.response?.data?.error || 'Lỗi tạo đồ uống');
+      return rejectWithValue(error.response?.data?.error || "Lỗi tạo đồ uống");
     }
-  }
+  },
 );
 
 export const updateDrink = createAsyncThunk(
-  'admin/updateDrink',
-  async ({ id, data, imageFile }: { id: string; data: Record<string, any>; imageFile?: File }, { rejectWithValue }) => {
+  "admin/updateDrink",
+  async (
+    {
+      id,
+      data,
+      imageFile,
+    }: { id: string; data: Record<string, any>; imageFile?: File },
+    { rejectWithValue },
+  ) => {
     try {
       const result = await adminService.updateDrink(id, data, imageFile);
       return result.drink;
     } catch (error: any) {
-      return rejectWithValue(error.response?.data?.error || 'Lỗi cập nhật đồ uống');
+      return rejectWithValue(
+        error.response?.data?.error || "Lỗi cập nhật đồ uống",
+      );
     }
-  }
+  },
 );
 
 export const updateStock = createAsyncThunk(
-  'admin/updateStock',
-  async ({ id, quantity }: { id: string; quantity: number }, { rejectWithValue }) => {
+  "admin/updateStock",
+  async (
+    { id, quantity }: { id: string; quantity: number },
+    { rejectWithValue },
+  ) => {
     try {
       const result = await adminService.updateStock(id, quantity);
       return result.drink;
     } catch (error: any) {
-      return rejectWithValue(error.response?.data?.error || 'Lỗi cập nhật tồn kho');
+      return rejectWithValue(
+        error.response?.data?.error || "Lỗi cập nhật tồn kho",
+      );
     }
-  }
+  },
 );
 
 export const deleteDrink = createAsyncThunk(
-  'admin/deleteDrink',
+  "admin/deleteDrink",
   async (id: string, { rejectWithValue }) => {
     try {
       await adminService.deleteDrink(id);
       return id;
     } catch (error: any) {
-      return rejectWithValue(error.response?.data?.error || 'Lỗi xóa đồ uống');
+      return rejectWithValue(error.response?.data?.error || "Lỗi xóa đồ uống");
     }
-  }
+  },
 );
 
 // ---- Revenue thunks ----
 export const fetchDashboard = createAsyncThunk(
-  'admin/fetchDashboard',
+  "admin/fetchDashboard",
   async (
-    { adminId, params }: { adminId: string; params?: { startDate?: string; endDate?: string; courtId?: string } },
-    { rejectWithValue }
+    {
+      adminId,
+      params,
+    }: {
+      adminId: string;
+      params?: { startDate?: string; endDate?: string; courtId?: string };
+    },
+    { rejectWithValue },
   ) => {
     try {
       return await adminService.getDashboard(adminId, params);
     } catch (error: any) {
-      return rejectWithValue(error.response?.data?.error || 'Lỗi tải dashboard');
+      return rejectWithValue(
+        error.response?.data?.error || "Lỗi tải dashboard",
+      );
     }
-  }
+  },
 );
 
 export const fetchRevenueByDate = createAsyncThunk(
-  'admin/fetchRevenueByDate',
+  "admin/fetchRevenueByDate",
   async (
-    { adminId, params }: { adminId: string; params?: { startDate?: string; endDate?: string } },
-    { rejectWithValue }
+    {
+      adminId,
+      params,
+    }: { adminId: string; params?: { startDate?: string; endDate?: string } },
+    { rejectWithValue },
   ) => {
     try {
       return await adminService.getRevenueByDate(adminId, params);
     } catch (error: any) {
-      return rejectWithValue(error.response?.data?.error || 'Lỗi tải doanh thu theo ngày');
+      return rejectWithValue(
+        error.response?.data?.error || "Lỗi tải doanh thu theo ngày",
+      );
     }
-  }
+  },
 );
 
 export const fetchRevenueByMonth = createAsyncThunk(
-  'admin/fetchRevenueByMonth',
+  "admin/fetchRevenueByMonth",
   async (
     { adminId, params }: { adminId: string; params?: { year?: string } },
-    { rejectWithValue }
+    { rejectWithValue },
   ) => {
     try {
       return await adminService.getRevenueByMonth(adminId, params);
     } catch (error: any) {
-      return rejectWithValue(error.response?.data?.error || 'Lỗi tải doanh thu theo tháng');
+      return rejectWithValue(
+        error.response?.data?.error || "Lỗi tải doanh thu theo tháng",
+      );
     }
-  }
+  },
 );
 
 export const fetchRevenueByCourt = createAsyncThunk(
-  'admin/fetchRevenueByCourt',
+  "admin/fetchRevenueByCourt",
   async (
-    { adminId, params }: { adminId: string; params?: { startDate?: string; endDate?: string } },
-    { rejectWithValue }
+    {
+      adminId,
+      params,
+    }: { adminId: string; params?: { startDate?: string; endDate?: string } },
+    { rejectWithValue },
   ) => {
     try {
       return await adminService.getRevenueByCourt(adminId, params);
     } catch (error: any) {
-      return rejectWithValue(error.response?.data?.error || 'Lỗi tải doanh thu theo sân');
+      return rejectWithValue(
+        error.response?.data?.error || "Lỗi tải doanh thu theo sân",
+      );
     }
-  }
+  },
 );
 
 const adminSlice = createSlice({
-  name: 'admin',
+  name: "admin",
   initialState,
   reducers: {
     clearAdminError: (state) => {
@@ -344,6 +431,12 @@ const adminSlice = createSlice({
 
     addLoadingCases(addDrinkToBooking);
     builder.addCase(addDrinkToBooking.fulfilled, (state, action) => {
+      state.isLoading = false;
+      const idx = state.bookings.findIndex((b) => b._id === action.payload._id);
+      if (idx !== -1) state.bookings[idx] = action.payload;
+    });
+    addLoadingCases(updateBookingCourt);
+    builder.addCase(updateBookingCourt.fulfilled, (state, action) => {
       state.isLoading = false;
       const idx = state.bookings.findIndex((b) => b._id === action.payload._id);
       if (idx !== -1) state.bookings[idx] = action.payload;

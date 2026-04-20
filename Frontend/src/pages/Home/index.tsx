@@ -20,7 +20,7 @@ import { FilterList, Search, LocationOn } from "@mui/icons-material";
 import { AppDispatch, RootState } from "../../store/store";
 import { fetchAvailableCourts } from "../../store/slices/courtSlice";
 import Banner from "../../components/Banner";
-import CourtCard from "../../components/SlideBar";
+import CourtCard from "../../components/CourtCard";
 
 const Home: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -51,7 +51,9 @@ const Home: React.FC = () => {
       filtered = filtered.filter((court) => court.district === districtFilter);
     }
     if (maxPrice) {
-      filtered = filtered.filter((court) => court.pricePerHour <= Number(maxPrice));
+      filtered = filtered.filter(
+        (court) => court.pricePerHour <= Number(maxPrice),
+      );
     }
     return filtered;
   }, [courts, searchTerm, districtFilter, maxPrice]);
