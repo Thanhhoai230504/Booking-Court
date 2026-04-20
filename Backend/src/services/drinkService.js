@@ -69,6 +69,7 @@ const updateDrink = async (drinkId, userId, userRole, updateData, imagePath = nu
 
   const allowedFields = ['name', 'price', 'quantity', 'minStock', 'description'];
   for (const field of allowedFields) {
+    //kiểm tra xem client có gửi field này lên không, nếu có thì update, nếu không thì giữ nguyên
     if (updateData[field] !== undefined) {
       drink[field] = updateData[field];
     }

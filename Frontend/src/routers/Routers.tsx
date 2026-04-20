@@ -10,6 +10,8 @@ import {
   MyBookings,
   AccountPage,
   AdminBookings,
+  AdminDashboard,
+  AdminRevenue,
 } from "../pages";
 import BookingSchedule from "@/pages/BookingSchedule";
 import Booking from "@/pages/Booking";
@@ -44,8 +46,10 @@ const Routers: React.FC = () => {
             </AdminGuard>
           }
         >
+          <Route path="/admin" element={<AdminDashboard />} />
           <Route path="/admin/courts" element={<AdminCourts />} />
           <Route path="/admin/drinks" element={<AdminDrinks />} />
+          <Route path="/admin/revenue" element={<AdminRevenue />} />
           <Route path="/admin/bookings" element={<AdminBookings />} />
         </Route>
       </Routes>
