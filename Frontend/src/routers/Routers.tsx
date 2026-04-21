@@ -1,44 +1,52 @@
-import React from "react";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import MainLayout from "@/layout/MainLayout/MainLayout";
-import Home from "@/pages/Home";
-import CourtDetail from "@/pages/CourtDetail";
+import React from 'react';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import MainLayout from '../layout/MainLayout/MainLayout';
+import AdminLayout from '../layout/AdminLayout/AdminLayout';
+import AdminGuard from '../components/AdminGuard/AdminGuard';
+import AdminOnlyGuard from '../components/AdminOnlyGuard/AdminOnlyGuard';
 import {
+  Home,
   Login,
   SignUp,
-  FavoriteCourts,
+  CourtDetail,
+  Booking,
+  BookingSchedule,
   MyBookings,
   AccountPage,
-  AdminBookings,
+  FavoriteCourts,
   AdminDashboard,
+  AdminCourts,
+  AdminBookings,
+  AdminDrinks,
   AdminRevenue,
-} from "../pages";
-import BookingSchedule from "@/pages/BookingSchedule";
-import Booking from "@/pages/Booking";
-import AdminLayout from "@/layout/AdminLayout/AdminLayout";
-import AdminGuard from "@/components/AdminGuard/AdminGuard";
-import AdminCourts from "@/pages/admin/AdminCourts";
-import AdminDrinks from "@/pages/admin/AdminDrinks";
+  AdminManagementDashboard,
+  ManageOwners,
+  ManageCustomers,
+  SystemRevenue,
+} from '../pages';
+
 const Routers: React.FC = () => {
   return (
     <BrowserRouter>
       <Routes>
+        {/* Auth pages - no layout */}
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<SignUp />} />
 
-        <Route
-          path="/booking-schedule/:courtId"
-          element={<BookingSchedule />}
-        />
+        {/* Booking schedule - fullscreen, no layout */}
+        <Route path="/booking-schedule/:courtId" element={<BookingSchedule />} />
+
+        {/* Main layout pages */}
         <Route element={<MainLayout />}>
           <Route path="/" element={<Home />} />
           <Route path="/courts/:id" element={<CourtDetail />} />
-          <Route path="/favorites" element={<FavoriteCourts />} />
-          <Route path="/my-bookings" element={<MyBookings />} />
           <Route path="/booking/:courtId" element={<Booking />} />
+          <Route path="/my-bookings" element={<MyBookings />} />
           <Route path="/account" element={<AccountPage />} />
+          <Route path="/favorites" element={<FavoriteCourts />} />
         </Route>
 
+        {/* Owner/Admin pages (both owner and admin can access) */}
         <Route
           element={
             <AdminGuard>
@@ -48,9 +56,23 @@ const Routers: React.FC = () => {
         >
           <Route path="/admin" element={<AdminDashboard />} />
           <Route path="/admin/courts" element={<AdminCourts />} />
+          <Route path="/admin/bookings" element={<AdminBookings />} />
           <Route path="/admin/drinks" element={<AdminDrinks />} />
           <Route path="/admin/revenue" element={<AdminRevenue />} />
-          <Route path="/admin/bookings" element={<AdminBookings />} />
+        </Route>
+
+        {/* Admin management pages (admin only) */}
+        <Route
+          element={
+            <AdminOnlyGuard>
+              <AdminLayout />
+            </AdminOnlyGuard>
+          }
+        >
+          <Route path="/admin-management" element={<AdminManagementDashboard />} />
+          <Route path="/admin-management/owners" element={<ManageOwners />} />
+          <Route path="/admin-management/customers" element={<ManageCustomers />} />
+          <Route path="/admin-management/revenue" element={<SystemRevenue />} />
         </Route>
       </Routes>
     </BrowserRouter>
