@@ -1,9 +1,9 @@
-import React from 'react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import MainLayout from '../layout/MainLayout/MainLayout';
-import AdminLayout from '../layout/AdminLayout/AdminLayout';
-import AdminGuard from '../components/AdminGuard/AdminGuard';
-import AdminOnlyGuard from '../components/AdminOnlyGuard/AdminOnlyGuard';
+import React from "react";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import MainLayout from "../layout/MainLayout/MainLayout";
+import AdminLayout from "../layout/AdminLayout/AdminLayout";
+import AdminGuard from "../components/AdminGuard/AdminGuard";
+import AdminOnlyGuard from "../components/AdminOnlyGuard/AdminOnlyGuard";
 import {
   Home,
   Login,
@@ -23,7 +23,7 @@ import {
   ManageOwners,
   ManageCustomers,
   SystemRevenue,
-} from '../pages';
+} from "../pages";
 
 const Routers: React.FC = () => {
   return (
@@ -34,7 +34,10 @@ const Routers: React.FC = () => {
         <Route path="/signup" element={<SignUp />} />
 
         {/* Booking schedule - fullscreen, no layout */}
-        <Route path="/booking-schedule/:courtId" element={<BookingSchedule />} />
+        <Route
+          path="/booking-schedule/:courtId"
+          element={<BookingSchedule />}
+        />
 
         {/* Main layout pages */}
         <Route element={<MainLayout />}>
@@ -69,11 +72,19 @@ const Routers: React.FC = () => {
             </AdminOnlyGuard>
           }
         >
-          <Route path="/admin-management" element={<AdminManagementDashboard />} />
+          <Route
+            path="/admin-management"
+            element={<AdminManagementDashboard />}
+          />
           <Route path="/admin-management/owners" element={<ManageOwners />} />
-          <Route path="/admin-management/customers" element={<ManageCustomers />} />
+          <Route
+            path="/admin-management/customers"
+            element={<ManageCustomers />}
+          />
           <Route path="/admin-management/revenue" element={<SystemRevenue />} />
         </Route>
+
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>
   );
