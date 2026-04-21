@@ -36,6 +36,7 @@ import {
 import { AppDispatch, RootState } from '../../store/store';
 import { fetchCourtDetail } from '../../store/slices/courtSlice';
 import { createBooking, resetCreateSuccess } from '../../store/slices/bookingSlice';
+import { showToast } from '../../utils/toastNotify';
 
 const steps = ['Chọn thời gian', 'Thông tin cá nhân', 'Xác nhận'];
 
@@ -93,19 +94,25 @@ const Booking: React.FC = () => {
     setBookingData({ ...bookingData, [field]: e.target.value });
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!courtId) return;
-    dispatch(createBooking({
-      courtId,
-      startDate: bookingData.startDate,
-      startTime: bookingData.startTime,
-      endTime: bookingData.endTime,
-      durationHours: bookingData.durationHours,
-      customerName: bookingData.customerName,
-      customerPhone: bookingData.customerPhone,
-      bookingType: bookingData.bookingType,
-      paymentMethod: bookingData.paymentMethod,
-    }));
+    try {
+      await dispatch(createBooking({
+        courtId,
+        startDate: bookingData.startDate,
+        startTime: bookingData.startTime,
+        endTime: bookingData.endTime,
+        durationHours: bookingData.durationHours,
+        customerName: bookingData.customerName,
+        customerPhone: bookingData.customerPhone,
+        bookingType: bookingData.bookingType,
+        paymentMethod: bookingData.paymentMethod,
+      })).unwrap();
+      showToast.success('Thành công', 'Đặt sân thành công! Đơn đang chờ duyệt.');
+      navigate('/my-bookings');
+    } catch (err: any) {
+      showToast.error('Thất bại', err || 'Có lỗi xảy ra khi đặt sân');
+    }
   };
 
   const formatPrice = (price: number) => new Intl.NumberFormat('vi-VN').format(price) + 'đ';
@@ -115,48 +122,7 @@ const Booking: React.FC = () => {
   const canProceedStep0 = bookingData.startDate && bookingData.startTime && bookingData.endTime && bookingData.durationHours > 0;
   const canProceedStep1 = bookingData.customerName && bookingData.customerPhone;
 
-  // Success view
-  if (createSuccess) {
-    return (
-      <Container maxWidth="sm" sx={{ py: 8, textAlign: 'center' }}>
-        <CheckCircle sx={{ fontSize: 80, color: '#006837', mb: 2 }} />
-        <Typography variant="h4" fontWeight={800} gutterBottom>
-          Đặt sân thành công!
-        </Typography>
-        <Typography color="text.secondary" sx={{ mb: 4, fontSize: '1.1rem' }}>
-          Đơn đặt sân của bạn đã được gửi và đang chờ chủ sân phê duyệt.
-        </Typography>
-        <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center' }}>
-          <Button
-            variant="contained"
-            onClick={() => navigate('/my-bookings')}
-            sx={{
-              bgcolor: '#006837',
-              px: 4,
-              py: 1.5,
-              fontWeight: 700,
-              '&:hover': { bgcolor: '#004D25' },
-            }}
-          >
-            Xem đơn đặt sân
-          </Button>
-          <Button
-            variant="outlined"
-            onClick={() => navigate('/')}
-            sx={{
-              borderColor: '#006837',
-              color: '#006837',
-              px: 4,
-              py: 1.5,
-              fontWeight: 700,
-            }}
-          >
-            Về trang chủ
-          </Button>
-        </Box>
-      </Container>
-    );
-  }
+  // Success handle moved to toast notification
 
   if (!court) {
     return (
@@ -208,9 +174,7 @@ const Booking: React.FC = () => {
           </Stepper>
         </Paper>
 
-        {error && (
-          <Alert severity="error" sx={{ mb: 3, borderRadius: 2 }}>{error}</Alert>
-        )}
+        {/* Errors handled by toast */}
 
         <Grid container spacing={3}>
           {/* Left - Form */}

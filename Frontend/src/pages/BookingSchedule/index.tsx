@@ -35,6 +35,7 @@ import {
 import { AppDispatch, RootState } from '../../store/store';
 import { fetchCourtDetail } from '../../store/slices/courtSlice';
 import { createBooking, resetCreateSuccess, fetchCourtSchedule } from '../../store/slices/bookingSlice';
+import { showToast } from '../../utils/toastNotify';
 
 interface SelectedSlot {
   courtIndex: number;
@@ -208,24 +209,30 @@ const BookingSchedule: React.FC = () => {
     setShowConfirmDialog(true);
   };
 
-  const handleConfirmBooking = () => {
+  const handleConfirmBooking = async () => {
     if (!courtId || !bookingInfo) return;
-    // Get the first selected court index to send as courtNumber
     const courtNumber = selectedSlots.length > 0 ? selectedSlots[0].courtIndex : 0;
-    dispatch(
-      createBooking({
-        courtId,
-        courtNumber,
-        startDate: selectedDate,
-        startTime: bookingInfo.startTime,
-        endTime: bookingInfo.endTime,
-        durationHours: bookingInfo.durationHours,
-        customerName: customerInfo.customerName,
-        customerPhone: customerInfo.customerPhone,
-        bookingType: 'single',
-        paymentMethod: customerInfo.paymentMethod,
-      })
-    );
+    try {
+      await dispatch(
+        createBooking({
+          courtId,
+          courtNumber,
+          startDate: selectedDate,
+          startTime: bookingInfo.startTime,
+          endTime: bookingInfo.endTime,
+          durationHours: bookingInfo.durationHours,
+          customerName: customerInfo.customerName,
+          customerPhone: customerInfo.customerPhone,
+          bookingType: 'single',
+          paymentMethod: customerInfo.paymentMethod,
+        })
+      ).unwrap();
+      showToast.success('Thành công', 'Đặt sân thành công! Đơn đang chờ duyệt.');
+      setShowConfirmDialog(false);
+      navigate('/my-bookings');
+    } catch (err: any) {
+      showToast.error('Thất bại', err || 'Có lỗi xảy ra khi đặt sân');
+    }
   };
 
   const formatPrice = (price: number) => new Intl.NumberFormat('vi-VN').format(price) + 'đ';
@@ -234,36 +241,7 @@ const BookingSchedule: React.FC = () => {
     return d.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' });
   };
 
-  // Success screen
-  if (createSuccess) {
-    return (
-      <Container maxWidth="sm" sx={{ py: 8, textAlign: 'center' }}>
-        <CheckCircle sx={{ fontSize: 80, color: '#006837', mb: 2 }} />
-        <Typography variant="h4" fontWeight={800} gutterBottom>
-          Đặt sân thành công!
-        </Typography>
-        <Typography color="text.secondary" sx={{ mb: 4, fontSize: '1.1rem' }}>
-          Đơn đặt sân của bạn đã được gửi và đang chờ chủ sân phê duyệt.
-        </Typography>
-        <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center' }}>
-          <Button
-            variant="contained"
-            onClick={() => navigate('/my-bookings')}
-            sx={{ bgcolor: '#006837', px: 4, py: 1.5, fontWeight: 700, '&:hover': { bgcolor: '#004D25' } }}
-          >
-            Xem đơn đặt sân
-          </Button>
-          <Button
-            variant="outlined"
-            onClick={() => navigate('/')}
-            sx={{ borderColor: '#006837', color: '#006837', px: 4, py: 1.5, fontWeight: 700 }}
-          >
-            Về trang chủ
-          </Button>
-        </Box>
-      </Container>
-    );
-  }
+  // Success screen removed in favor of toast + navigation
 
   if (!court) {
     return (
@@ -570,9 +548,7 @@ const BookingSchedule: React.FC = () => {
           Xác nhận đặt sân
         </DialogTitle>
         <DialogContent sx={{ pt: 2 }}>
-          {error && (
-            <Alert severity="error" sx={{ mb: 2, borderRadius: 2 }}>{error}</Alert>
-          )}
+          {/* Error handling is now with toast */}
 
           {/* Booking summary */}
           <Paper variant="outlined" sx={{ p: 2, borderRadius: 2, mb: 2.5 }}>
