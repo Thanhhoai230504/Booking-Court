@@ -172,7 +172,7 @@ export interface RevenueByMonth {
 }
 
 export interface RevenueByCourt {
-  _id: string;
+  _id: { courtId: string; courtNumber: number };
   totalRevenue: number;
   courtRevenue: number;
   drinkRevenue: number;
