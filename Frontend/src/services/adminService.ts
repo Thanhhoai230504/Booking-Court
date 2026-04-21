@@ -186,12 +186,13 @@ export const adminService = {
 
   getRevenueByDate: async (
     adminId: string,
-    params?: { startDate?: string; endDate?: string }
+    params?: { startDate?: string; endDate?: string; courtId?: string }
   ): Promise<RevenueByDate[]> => {
     const queryParams = new URLSearchParams();
     if (params) {
       if (params.startDate) queryParams.append('startDate', params.startDate);
       if (params.endDate) queryParams.append('endDate', params.endDate);
+      if (params.courtId) queryParams.append('courtId', params.courtId);
     }
     const response = await axiosPickleball.get(
       `/revenue/admin/${adminId}/revenue-by-date?${queryParams.toString()}`
@@ -201,10 +202,11 @@ export const adminService = {
 
   getRevenueByMonth: async (
     adminId: string,
-    params?: { year?: string }
+    params?: { year?: string; courtId?: string }
   ): Promise<RevenueByMonth[]> => {
     const queryParams = new URLSearchParams();
     if (params?.year) queryParams.append('year', params.year);
+    if (params?.courtId) queryParams.append('courtId', params.courtId);
     const response = await axiosPickleball.get(
       `/revenue/admin/${adminId}/revenue-by-month?${queryParams.toString()}`
     );
@@ -213,12 +215,13 @@ export const adminService = {
 
   getRevenueByCourt: async (
     adminId: string,
-    params?: { startDate?: string; endDate?: string }
+    params?: { startDate?: string; endDate?: string; courtId?: string }
   ): Promise<RevenueByCourt[]> => {
     const queryParams = new URLSearchParams();
     if (params) {
       if (params.startDate) queryParams.append('startDate', params.startDate);
       if (params.endDate) queryParams.append('endDate', params.endDate);
+      if (params.courtId) queryParams.append('courtId', params.courtId);
     }
     const response = await axiosPickleball.get(
       `/revenue/admin/${adminId}/revenue-by-court?${queryParams.toString()}`
