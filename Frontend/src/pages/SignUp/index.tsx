@@ -24,6 +24,7 @@ import {
 } from '@mui/icons-material';
 import { AppDispatch, RootState } from '../../store/store';
 import { register, clearError } from '../../store/slices/authSlice';
+import { showToast } from '../../utils/toastNotify';
 
 const SignUp: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -54,26 +55,31 @@ const SignUp: React.FC = () => {
     setLocalError('');
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLocalError('');
 
     if (formData.password !== formData.confirmPassword) {
-      setLocalError('Mật khẩu xác nhận không khớp');
+      showToast.warning('Cảnh cáo', 'Mật khẩu xác nhận không khớp');
       return;
     }
     if (formData.password.length < 6) {
-      setLocalError('Mật khẩu phải có ít nhất 6 ký tự');
+      showToast.warning('Cảnh cáo', 'Mật khẩu phải có ít nhất 6 ký tự');
       return;
     }
 
-    dispatch(register({
-      name: formData.name,
-      email: formData.email,
-      phone: formData.phone,
-      password: formData.password,
-      role: 'customer',
-    }));
+    try {
+      await dispatch(register({
+        name: formData.name,
+        email: formData.email,
+        phone: formData.phone,
+        password: formData.password,
+        role: 'customer',
+      })).unwrap();
+      showToast.success('Thành công', 'Đăng ký tài khoản thành công!');
+    } catch (err: any) {
+      showToast.error('Thất bại', err || 'Đăng ký thất bại');
+    }
   };
 
   return (
@@ -144,11 +150,7 @@ const SignUp: React.FC = () => {
             boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
           }}
         >
-          {(error || localError) && (
-            <Alert severity="error" sx={{ mb: 3, borderRadius: 2 }}>
-              {localError || error}
-            </Alert>
-          )}
+          {/* Error handled by toast */}
 
           <form onSubmit={handleSubmit}>
             <Typography fontWeight={700} sx={{ mb: 1 }}>

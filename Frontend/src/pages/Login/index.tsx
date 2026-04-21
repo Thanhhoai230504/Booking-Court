@@ -24,11 +24,12 @@ import {
 } from '@mui/icons-material';
 import { AppDispatch, RootState } from '../../store/store';
 import { login, clearError } from '../../store/slices/authSlice';
+import { showToast } from '../../utils/toastNotify';
 
 const Login: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
-  const { isLoading, error, isAuthenticated } = useSelector((state: RootState) => state.auth);
+  const { isLoading, error, isAuthenticated, user } = useSelector((state: RootState) => state.auth);
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -36,16 +37,27 @@ const Login: React.FC = () => {
 
   useEffect(() => {
     if (isAuthenticated) {
-      navigate('/');
+      if (user?.role === 'owner') {
+        navigate('/admin', { replace: true });
+      } else if (user?.role === 'admin') {
+        navigate('/admin-management', { replace: true });
+      } else {
+        navigate('/', { replace: true });
+      }
     }
     return () => {
       dispatch(clearError());
     };
-  }, [isAuthenticated, navigate, dispatch]);
+  }, [isAuthenticated, user, navigate, dispatch]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    dispatch(login({ email, password }));
+    try {
+      await dispatch(login({ email, password })).unwrap();
+      showToast.success('Thành công', 'Đăng nhập thành công!');
+    } catch (err: any) {
+      showToast.error('Thất bại', err || 'Đăng nhập thất bại');
+    }
   };
 
   return (
@@ -119,11 +131,7 @@ const Login: React.FC = () => {
             boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
           }}
         >
-          {error && (
-            <Alert severity="error" sx={{ mb: 3, borderRadius: 2 }}>
-              {error}
-            </Alert>
-          )}
+          {/* Error handled by toast */}
 
           <form onSubmit={handleSubmit}>
             <Typography fontWeight={700} sx={{ mb: 1 }}>

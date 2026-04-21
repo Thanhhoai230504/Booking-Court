@@ -1,3 +1,4 @@
+const mongoose = require('mongoose');
 const Revenue = require('../models/Revenue');
 
 const getDashboard = async (adminId, userId, userRole, filters) => {
@@ -11,7 +12,7 @@ const getDashboard = async (adminId, userId, userRole, filters) => {
   const { startDate, endDate, courtId } = filters;
 
   let filter = {};
-  
+
   // Owner chỉ xem doanh thu của mình
   if (userRole !== 'admin') {
     filter.adminId = userId;
@@ -53,7 +54,7 @@ const getRevenueByDate = async (adminId, userId, userRole, filters) => {
 
   let match = {};
   if (userRole !== 'admin') {
-    match.adminId = userId;
+    match.adminId = new mongoose.Types.ObjectId(userId);
   }
 
   if (startDate || endDate) {
@@ -92,7 +93,7 @@ const getRevenueByMonth = async (adminId, userId, userRole, filters) => {
 
   const match = {};
   if (userRole !== 'admin') {
-    match.adminId = userId;
+    match.adminId = new mongoose.Types.ObjectId(userId);
   }
 
   if (year) {
@@ -131,7 +132,7 @@ const getRevenueByCourt = async (adminId, userId, userRole, filters) => {
 
   let match = {};
   if (userRole !== 'admin') {
-    match.adminId = userId;
+    match.adminId = new mongoose.Types.ObjectId(userId);
   }
 
   if (startDate || endDate) {
